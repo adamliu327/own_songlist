@@ -1,0 +1,49 @@
+services:
+  netease-api:
+    image: moefurina/ncm-api:latest
+    container_name: songlist-netease-api
+    environment:
+      - CORS_ALLOW_ORIGIN=*
+    networks:
+      - songlist
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: songlist-backend
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATABASE_URL=sqlite:///./data/songlist.db
+      - NETEASE_API_URL=http://netease-api:3000
+      - CORS_ORIGINS=http://localhost:30426
+    depends_on:
+      - netease-api
+    networks:
+      - songlist
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+    container_name: songlist-frontend
+    ports:
+      # 只监听本机；如需从其他设备访问，改为 "30426:80"
+      - "127.0.0.1:30426:80"
+    environment:
+      # 编辑锁密码：设置后添加/编辑/删除歌曲需先解锁，留空则不启用
+      - PASSWORD=
+    depends_on:
+      - backend
+    networks:
+      - songlist
+    restart: unless-stopped
+
+networks:
+  songlist:
+    driver: bridge
