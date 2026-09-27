@@ -41,10 +41,19 @@ class SearchCandidate(BaseModel):
     singer: str
     cover: Optional[str] = None
     album: Optional[str] = None
+    duration: Optional[int] = None  # 毫秒
 
 
 class SearchResponse(BaseModel):
     items: list[SearchCandidate]
+
+
+class LyricResponse(BaseModel):
+    external_id: str
+    lyric: Optional[str] = None
+    translation: Optional[str] = None
+    romaji: Optional[str] = None
+    no_lyric: bool = False
 
 
 class ConfigItem(BaseModel):

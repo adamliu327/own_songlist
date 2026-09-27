@@ -13,6 +13,8 @@ PLAYLIST_ID_RES = (
     re.compile(r"[?&]id=(\d+)"),
     re.compile(r"/playlist/(\d+)"),
 )
+# 行首的 [mm:ss.xx] 时间轴 / [ar:xx] 元信息标签，可能连续多个
+LRC_TAGS_RE = re.compile(r"^(?:\[[^\]]*\])+")
 PLAYLIST_PAGE_SIZE = 1000
 
 
@@ -47,6 +49,15 @@ def _extract_cover(song: dict) -> Optional[str]:
         if url and not _is_default_cover(url):
             return url
 
+    return None
+
+
+def _extract_duration(song: dict) -> Optional[int]:
+    """时长（毫秒）。旧版 /search 返回 duration，新版/cloudsearch 返回 dt。"""
+    for key in ("duration", "dt"):
+        value = song.get(key)
+        if isinstance(value, (int, float)) and value > 0:
+            return int(value)
     return None
 
 
@@ -171,6 +182,42 @@ async def fetch_netease_playlist(url_or_id: str) -> Dict[str, Any]:
     }
 
 
+async def fetch_netease_lyric(song_id: str) -> Dict[str, Any]:
+    """拉取单曲歌词：原文 / 翻译 / 罗马音，均为带时间轴的 LRC 文本。"""
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        response = await client.get(
+            f"{settings.netease_api_url}/lyric", params={"id": song_id}
+        )
+        response.raise_for_status()
+        data = response.json()
+
+    code = data.get("code")
+    if code is not None and code != 200:
+        raise ValueError("获取歌词失败，请确认歌曲 ID 有效")
+
+    def _lyric_text(key: str) -> Optional[str]:
+        block = data.get(key)
+        if not isinstance(block, dict):
+            return None
+        text = (block.get("lyric") or "").strip()
+        # 网易云常返回只有时间轴、没有文字的翻译（如周杰伦《晴天》），视同没有
+        has_text = any(
+            LRC_TAGS_RE.sub("", line).strip() for line in text.splitlines()
+        )
+        return text if has_text else None
+
+    lyric = _lyric_text("lrc")
+
+    return {
+        "external_id": str(song_id),
+        "lyric": lyric,
+        "translation": _lyric_text("tlyric"),
+        "romaji": _lyric_text("romalrc"),
+        # nolyric=纯音乐，uncollected=网易云未收录歌词
+        "no_lyric": not lyric or bool(data.get("nolyric")) or bool(data.get("uncollected")),
+    }
+
+
 async def search_netease(keyword: str, limit: int = 10) -> List[SearchCandidate]:
     url = f"{settings.netease_api_url}/search"
     params = {"keywords": keyword, "type": 1, "limit": limit}
@@ -195,6 +242,7 @@ async def search_netease(keyword: str, limit: int = 10) -> List[SearchCandidate]
                     singer=singer,
                     cover=_extract_cover(song),
                     album=_extract_album_name(song),
+                    duration=_extract_duration(song),
                 )
             )
 

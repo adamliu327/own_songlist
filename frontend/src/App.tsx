@@ -9,6 +9,7 @@ import { AddSongDialog } from '@/components/AddSongDialog';
 import { EditSongDialog } from '@/components/EditSongDialog';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import { CompareDialog } from '@/components/CompareDialog';
+import { LyricDownloadDialog } from '@/components/LyricDownloadDialog';
 import { UnlockDialog } from '@/components/UnlockDialog';
 import { useSongs } from '@/hooks/useSongs';
 import { useConfigStore } from '@/stores/configStore';
@@ -36,6 +37,7 @@ function App() {
   const [editingSong, setEditingSong] = useState<Song | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
+  const [lyricOpen, setLyricOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [unlockOpen, setUnlockOpen] = useState(false);
   const [luckySong, setLuckySong] = useState<Song | null>(null);
@@ -82,6 +84,7 @@ function App() {
       <AppHeader
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenCompare={() => setCompareOpen(true)}
+        onOpenLyric={() => setLyricOpen(true)}
         onUnlock={() => setUnlockOpen(true)}
       />
 
@@ -195,6 +198,8 @@ function App() {
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
 
       <CompareDialog open={compareOpen} onOpenChange={setCompareOpen} />
+
+      <LyricDownloadDialog open={lyricOpen} onOpenChange={setLyricOpen} />
 
       <UnlockDialog open={unlockOpen} onOpenChange={setUnlockOpen} />
 

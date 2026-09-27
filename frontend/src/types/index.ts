@@ -16,6 +16,8 @@ export interface SearchCandidate {
   singer: string;
   cover?: string;
   album?: string;
+  /** 时长（毫秒） */
+  duration?: number;
 }
 
 export interface AppConfig {
@@ -48,6 +50,15 @@ export interface BackendSearchCandidate {
   singer: string;
   cover?: string;
   album?: string;
+  duration?: number;
+}
+
+export interface LyricResult {
+  external_id: string;
+  lyric?: string | null;
+  translation?: string | null;
+  romaji?: string | null;
+  no_lyric: boolean;
 }
 
 export interface PlaylistTrackItem {

@@ -7,9 +7,17 @@ import type { SearchCandidate } from '@/types';
 
 interface SearchSourcePanelProps {
   onSelect: (candidate: SearchCandidate) => void;
+  /** 候选项上的操作按钮文案，默认「选用」 */
+  actionLabel?: string;
+  /** 正在处理中的候选项 ID，显示转圈并禁用全部按钮 */
+  busyExternalId?: string | null;
 }
 
-export function SearchSourcePanel({ onSelect }: SearchSourcePanelProps) {
+export function SearchSourcePanel({
+  onSelect,
+  actionLabel = '选用',
+  busyExternalId = null,
+}: SearchSourcePanelProps) {
   const { keyword, setKeyword, candidates, isLoading, error } = useSearchSource();
 
   return (
@@ -55,9 +63,14 @@ export function SearchSourcePanel({ onSelect }: SearchSourcePanelProps) {
             <Button
               size="sm"
               onClick={() => onSelect(candidate)}
-              className="rounded-xl bg-mint font-bold text-ink hover:bg-mint/90"
+              disabled={!!busyExternalId}
+              className="shrink-0 rounded-xl bg-mint font-bold text-ink hover:bg-mint/90 disabled:opacity-40"
             >
-              选用
+              {busyExternalId === candidate.externalId ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                actionLabel
+              )}
             </Button>
           </div>
         ))}

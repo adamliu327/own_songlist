@@ -1,4 +1,4 @@
-import { Music, Settings, Lock, Unlock, GitCompare } from 'lucide-react';
+import { Music, Settings, Lock, Unlock, GitCompare, FileMusic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'motion/react';
 import { useConfigStore } from '@/stores/configStore';
@@ -7,10 +7,16 @@ import { useAuthStore, requiresUnlock } from '@/stores/authStore';
 interface AppHeaderProps {
   onOpenSettings: () => void;
   onOpenCompare: () => void;
+  onOpenLyric: () => void;
   onUnlock: () => void;
 }
 
-export function AppHeader({ onOpenSettings, onOpenCompare, onUnlock }: AppHeaderProps) {
+export function AppHeader({
+  onOpenSettings,
+  onOpenCompare,
+  onOpenLyric,
+  onUnlock,
+}: AppHeaderProps) {
   const { config } = useConfigStore();
   const { isUnlocked, lock } = useAuthStore();
 
@@ -57,6 +63,16 @@ export function AppHeader({ onOpenSettings, onOpenCompare, onUnlock }: AppHeader
               {isUnlocked ? <Lock className="h-5 w-5" /> : <Unlock className="h-5 w-5" />}
             </Button>
           )}
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onOpenLyric}
+            title="下载歌词"
+            className="rounded-xl text-ink-muted hover:bg-white/60 hover:text-ink"
+          >
+            <FileMusic className="h-5 w-5" />
+          </Button>
 
           <Button
             variant="ghost"

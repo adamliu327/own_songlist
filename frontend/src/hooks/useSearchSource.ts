@@ -33,6 +33,7 @@ export function useSearchSource() {
               singer: item.singer,
               cover: item.cover,
               album: item.album,
+              duration: item.duration,
             }))
           );
         }
