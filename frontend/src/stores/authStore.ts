@@ -44,3 +44,5 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
+
+export const useCanEdit = () => useAuthStore((s) => !requiresUnlock || s.isUnlocked);
