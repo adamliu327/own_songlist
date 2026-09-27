@@ -6,7 +6,7 @@ import { useConfigStore } from '@/stores/configStore';
 import { useUiStore } from '@/stores/uiStore';
 import type { Song } from '@/types';
 
-/** 复制点歌弹幕。成功时只做行内反馈（uiStore.copied），失败才弹 toast */
+/** 复制点歌弹幕。成功时只做行内反馈（uiStore.copiedId），失败才弹 toast */
 export function useDanmakuCopy() {
   const template = useConfigStore((s) => s.config.danmakuTemplate);
   const flashCopied = useUiStore((s) => s.flashCopied);
@@ -16,7 +16,7 @@ export function useDanmakuCopy() {
       const text = renderDanmaku(template, song);
       try {
         await writeClipboard(text);
-        flashCopied(song.id, text);
+        flashCopied(song.id);
         return text;
       } catch (err) {
         toast.error('复制失败', {

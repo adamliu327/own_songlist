@@ -17,7 +17,6 @@ import { useVisibleSongs } from '@/hooks/useVisibleSongs';
 import { useListHotkeys } from '@/hooks/useListHotkeys';
 import { useSongStore } from '@/stores/songStore';
 import { useConfigStore } from '@/stores/configStore';
-import { useUiStore } from '@/stores/uiStore';
 import { applyTheme, watchSystemTheme } from '@/lib/theme';
 
 function App() {
@@ -50,11 +49,6 @@ function App() {
     document.title = config.playlistName;
   }, [config.playlistName]);
 
-  // 筛选变化后：有关键词时默认选中第一条，回车即可复制
-  useEffect(() => {
-    useUiStore.getState().setActiveIndex(filters.keyword.trim() ? 0 : -1);
-  }, [filters, overlap]);
-
   return (
     <MotionConfig reducedMotion="user">
       <div className="relative isolate min-h-dvh">
@@ -81,7 +75,7 @@ function App() {
                 ? `找到 ${visible.length} 首`
                 : `共 ${songs.length} 首`}
             </span>
-            <span className="hidden text-xs sm:pointer-fine:inline">点击歌曲或按 Enter 复制点歌弹幕 · ↑↓ 选择</span>
+            <span className="hidden text-xs sm:pointer-fine:inline">点击歌曲复制点歌弹幕 · 搜索时按 Enter 复制第一首</span>
           </div>
 
           <SongList songs={visible} isLoading={isLoading} hasSongs={songs.length > 0} />

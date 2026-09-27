@@ -20,20 +20,12 @@ interface SongListProps {
 
 export function SongList({ songs, isLoading, hasSongs }: SongListProps) {
   const keyword = useSongStore((s) => s.filters.keyword);
-  const activeIndex = useUiStore((s) => s.activeIndex);
-  const copied = useUiStore((s) => s.copied);
+  const copiedId = useUiStore((s) => s.copiedId);
   const openDialog = useUiStore((s) => s.openDialog);
-  const setActiveIndex = useUiStore((s) => s.setActiveIndex);
   const canEdit = useCanEdit();
   const copy = useDanmakuCopy();
 
-  const handleCopy = useCallback(
-    (song: Song, index: number) => {
-      setActiveIndex(index);
-      copy(song);
-    },
-    [copy, setActiveIndex],
-  );
+  const handleCopy = useCallback((song: Song) => copy(song), [copy]);
   const handleEdit = useCallback((song: Song) => openDialog({ type: 'edit', song }), [openDialog]);
   const handleDelete = useCallback((song: Song) => openDialog({ type: 'delete', song }), [openDialog]);
 
@@ -46,14 +38,12 @@ export function SongList({ songs, isLoading, hasSongs }: SongListProps) {
   return (
     <ul className="grid grid-cols-1 gap-2 lg:grid-cols-2">
       <AnimatePresence initial={false}>
-        {songs.map((song, index) => (
+        {songs.map((song) => (
           <SongRow
             key={song.id}
             song={song}
-            index={index}
             keyword={keyword}
-            active={index === activeIndex}
-            copiedText={copied?.id === song.id ? copied.text : null}
+            copied={copiedId === song.id}
             canEdit={canEdit}
             animate={animate}
             onCopy={handleCopy}

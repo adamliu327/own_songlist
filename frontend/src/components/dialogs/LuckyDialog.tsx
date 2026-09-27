@@ -34,7 +34,7 @@ export function LuckyDialog({ pool }: { pool: Song[] }) {
 
 function LuckyBody({ pool }: { pool: Song[] }) {
   const copy = useDanmakuCopy();
-  const copied = useUiStore((s) => s.copied);
+  const copiedId = useUiStore((s) => s.copiedId);
   // 打开弹窗时的歌单快照，抽奖过程中列表变化不影响
   const [songs] = useState(pool);
   const [display, setDisplay] = useState(() => randomOf(songs));
@@ -68,7 +68,7 @@ function LuckyBody({ pool }: { pool: Song[] }) {
     return () => timers.current.forEach(clearTimeout);
   }, [roll]);
 
-  const isCopied = !rolling && copied?.id === display.id;
+  const isCopied = !rolling && copiedId === display.id;
 
   return (
     <div

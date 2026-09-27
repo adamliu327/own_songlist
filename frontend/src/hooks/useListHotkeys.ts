@@ -7,7 +7,7 @@ import type { Song } from '@/types';
 
 /**
  * 主页键盘操作（有弹窗时不生效）：
- * /、⌘K 聚焦搜索；随处打字直接进搜索框；↑↓ 选择；Enter 复制；Esc 清空搜索
+ * /、⌘K 聚焦搜索；随处打字直接进搜索框；搜索框里 Enter 复制第一首；Esc 清空搜索
  */
 export function useListHotkeys(songs: Song[]) {
   const copy = useDanmakuCopy();
@@ -33,31 +33,17 @@ export function useListHotkeys(songs: Song[]) {
       }
       if (mod || e.altKey) return;
 
-      const last = songs.length - 1;
       switch (e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          ui.setActiveIndex(Math.min(ui.activeIndex + 1, last));
-          return;
-        case 'ArrowUp':
-          e.preventDefault();
-          ui.setActiveIndex(Math.max(ui.activeIndex - 1, 0));
-          return;
-        case 'Enter': {
-          const song = songs[Math.max(ui.activeIndex, 0)];
-          if (!song || (!inSearch && target.tagName === 'BUTTON')) return;
-          e.preventDefault();
-          ui.setActiveIndex(Math.max(ui.activeIndex, 0));
-          copy(song);
-          return;
-        }
-        case 'Escape':
-          if (useSongStore.getState().filters.keyword) {
-            useSongStore.getState().setFilters({ keyword: '' });
-          } else {
-            search.blur();
-            ui.setActiveIndex(-1);
+        case 'Enter':
+          // 搜索框里回车：复制第一首
+          if (inSearch && search.value.trim() && songs[0]) {
+            e.preventDefault();
+            copy(songs[0]);
           }
+          return;
+        case 'Escape':
+          if (useSongStore.getState().filters.keyword) useSongStore.getState().setFilters({ keyword: '' });
+          else search.blur();
           return;
       }
 

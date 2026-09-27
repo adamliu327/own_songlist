@@ -15,29 +15,24 @@ export type DialogState =
 
 interface UiState {
   dialog: DialogState | null;
-  /** 键盘选中的行（筛选结果中的下标），-1 表示未选中 */
-  activeIndex: number;
-  /** 刚复制的弹幕（歌曲 id + 文本），用于行内反馈 */
-  copied: { id: string; text: string } | null;
+  /** 刚复制过弹幕的歌曲，用于行内反馈 */
+  copiedId: string | null;
   openDialog: (dialog: DialogState) => void;
   closeDialog: () => void;
-  setActiveIndex: (index: number) => void;
-  flashCopied: (id: string, text: string) => void;
+  flashCopied: (id: string) => void;
 }
 
 let copiedTimer: ReturnType<typeof setTimeout> | undefined;
 
 export const useUiStore = create<UiState>((set) => ({
   dialog: null,
-  activeIndex: -1,
-  copied: null,
+  copiedId: null,
   openDialog: (dialog) => set({ dialog }),
   closeDialog: () => set({ dialog: null }),
-  setActiveIndex: (activeIndex) => set({ activeIndex }),
-  flashCopied: (id, text) => {
+  flashCopied: (id) => {
     clearTimeout(copiedTimer);
-    set({ copied: { id, text } });
-    copiedTimer = setTimeout(() => set({ copied: null }), 1800);
+    set({ copiedId: id });
+    copiedTimer = setTimeout(() => set({ copiedId: null }), 1600);
   },
 }));
 

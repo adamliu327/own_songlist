@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from 'react';
+import { memo } from 'react';
 import { motion } from 'motion/react';
 import { Check, Copy, Pencil, Trash2 } from 'lucide-react';
 import { SongCover } from '@/components/common/SongCover';
@@ -9,58 +9,43 @@ import type { Song } from '@/types';
 
 interface SongRowProps {
   song: Song;
-  index: number;
   keyword: string;
-  active: boolean;
-  /** 刚复制的弹幕文本，非空时显示复制反馈 */
-  copiedText: string | null;
+  copied: boolean;
   canEdit: boolean;
   animate: boolean;
-  onCopy: (song: Song, index: number) => void;
+  onCopy: (song: Song) => void;
   onEdit: (song: Song) => void;
   onDelete: (song: Song) => void;
 }
 
 export const SongRow = memo(function SongRow({
   song,
-  index,
   keyword,
-  active,
-  copiedText,
+  copied,
   canEdit,
   animate,
   onCopy,
   onEdit,
   onDelete,
 }: SongRowProps) {
-  const ref = useRef<HTMLLIElement>(null);
-  const copied = copiedText !== null;
-
-  useEffect(() => {
-    if (active) ref.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }, [active]);
-
   return (
     <motion.li
-      ref={ref}
       layout={animate ? 'position' : false}
       initial={animate ? { opacity: 0, y: 8 } : false}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.97, transition: { duration: 0.14 } }}
       transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.8 }}
-      className="scroll-my-24"
     >
       <div
         role="button"
         tabIndex={-1}
-        onClick={() => onCopy(song, index)}
+        onClick={() => onCopy(song)}
         title="点击复制点歌弹幕"
         className={cn(
           'group relative flex cursor-pointer items-center gap-3 rounded-2xl border bg-surface p-2.5 pr-3 transition-[background-color,border-color,box-shadow] duration-200 select-none sm:p-3',
           copied
             ? 'border-mint/60 bg-mint-light/60 dark:bg-mint/10'
-            : 'border-line hover:border-mint/50 hover:shadow-soft',
-          active && !copied && 'border-mint ring-[3px] ring-mint/25',
+            : 'border-line hover:border-mint/70 hover:bg-subtle hover:shadow-soft',
         )}
       >
         <SongCover src={song.cover} alt={song.name} />
@@ -74,7 +59,7 @@ export const SongRow = memo(function SongRow({
           </div>
           {copied ? (
             <p className="mt-0.5 truncate text-sm font-medium text-mint-700 dark:text-mint">
-              已复制「{copiedText}」
+              已复制
             </p>
           ) : (
             <p className="mt-0.5 truncate text-sm text-fg-muted">
