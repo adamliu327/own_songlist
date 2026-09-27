@@ -56,17 +56,18 @@
   --color-ink: #1a1a2e;
   --color-ink-muted: #6b7280;
 
-  --radius-sm: calc(var(--radius) - 6px);
+  /* 以 --radius（10px）为基准：sm 6 / md 8 / lg 10 / xl 14 / 2xl 18 / 3xl 24 */
+  --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 6px);
-  --radius-2xl: calc(var(--radius) + 12px);
-  --radius-3xl: calc(var(--radius) + 20px);
-  --radius-4xl: calc(var(--radius) + 28px);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 14px);
+  --radius-4xl: calc(var(--radius) + 22px);
 }
 
 :root {
-  --radius: 1rem;
+  --radius: 0.625rem;
   --background: #fffbf7;
   --foreground: #1a1a2e;
   --card: #ffffff;

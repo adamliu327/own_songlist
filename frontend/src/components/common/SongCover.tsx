@@ -13,7 +13,7 @@ export function SongCover({ src, alt, className }: SongCoverProps) {
   return (
     <div
       className={cn(
-        'relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-pink-light dark:bg-subtle',
+        'relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-pink-light dark:bg-subtle',
         className,
       )}
     >

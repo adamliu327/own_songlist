@@ -74,7 +74,21 @@ function SearchAddPanel() {
   const [remark, setRemark] = useState('');
   const [savingId, setSavingId] = useState<string | null>(null);
 
-  const library = useMemo(() => new Set(songs.map((s) => songKey(s.name, s.singer))), [songs]);
+  // 歌名 + 歌手 → 已收录版本的封面。同一歌手的同名歌（Live、不同专辑）靠封面区分；
+  // 没有封面的（手动录入）分不出版本，按歌名 + 歌手算
+  const library = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    for (const s of songs) {
+      const key = songKey(s.name, s.singer);
+      if (!map.has(key)) map.set(key, new Set());
+      map.get(key)!.add(s.cover ?? '');
+    }
+    return map;
+  }, [songs]);
+  const inLibrary = (c: SearchCandidate) => {
+    const covers = library.get(songKey(c.name, c.singer));
+    return !!covers && (covers.has('') || covers.has(c.cover ?? ''));
+  };
 
   const expand = (candidate: SearchCandidate) => {
     setExpandedId(candidate.externalId);
@@ -104,7 +118,7 @@ function SearchAddPanel() {
   return (
     <SearchSourcePanel
       renderTag={(c) =>
-        library.has(songKey(c.name, c.singer)) && (
+        inLibrary(c) && (
           <span className="flex shrink-0 items-center gap-0.5 rounded-full bg-mint/15 px-2 py-0.5 text-[11px] font-medium text-mint-700 dark:text-mint">
             <Check className="size-3" />
             已在歌单
