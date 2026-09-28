@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
 from app.config import get_settings
-from app.routers import search, songs, config, compare, playlist_import
+from app.routers import search, songs, config, compare, playlist_import, lyric
 
 settings = get_settings()
 
@@ -25,6 +25,7 @@ app.include_router(songs.router, prefix="/songs", tags=["songs"])
 app.include_router(config.router, prefix="/config", tags=["config"])
 app.include_router(compare.router, prefix="/compare", tags=["compare"])
 app.include_router(playlist_import.router, prefix="/import", tags=["import"])
+app.include_router(lyric.router, prefix="/lyric", tags=["lyric"])
 
 
 @app.get("/")

@@ -1,5 +1,11 @@
 import axios from 'axios';
-import type { BackendSearchCandidate, BackendSong, CompareResult, PlaylistPreview } from '@/types';
+import type {
+  BackendSearchCandidate,
+  BackendSong,
+  CompareResult,
+  LyricResult,
+  PlaylistPreview,
+} from '@/types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -16,6 +22,11 @@ export async function searchCandidates(keyword: string, source: 'netease' = 'net
   const { data } = await api.get('/search/', {
     params: { keyword, source },
   });
+  return data;
+}
+
+export async function fetchNeteaseLyric(externalId: string): Promise<LyricResult> {
+  const { data } = await api.get('/lyric/netease', { params: { id: externalId } });
   return data;
 }
 

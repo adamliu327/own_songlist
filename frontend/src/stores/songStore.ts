@@ -20,17 +20,6 @@ interface SongState {
   setOverlap: (overlap: OverlapFilter | null) => void;
   setOverlapMode: (mode: CompareMode) => void;
   clearOverlap: () => void;
-  filteredSongs: () => Song[];
-}
-
-function matchesFilters(song: Song, filters: SongFilters): boolean {
-  const keyword = filters.keyword.trim().toLowerCase();
-  const matchKeyword =
-    keyword.length === 0 ||
-    song.name.toLowerCase().includes(keyword) ||
-    (song.singer?.toLowerCase().includes(keyword) ?? false);
-  const matchLanguage = filters.language.length === 0 || song.language === filters.language;
-  return matchKeyword && matchLanguage;
 }
 
 // BackendSong (snake_case, ISO 字符串) → Song (camelCase, 毫秒时间戳)
@@ -57,7 +46,7 @@ function toPayload(song: Pick<Song, 'name' | 'singer' | 'language' | 'remark' | 
   };
 }
 
-export const useSongStore = create<SongState>((set, get) => ({
+export const useSongStore = create<SongState>((set) => ({
   songs: [],
   filters: {
     keyword: '',
@@ -113,24 +102,5 @@ export const useSongStore = create<SongState>((set, get) => ({
 
   clearOverlap: () => {
     set({ overlap: null });
-  },
-
-  filteredSongs: () => {
-    const { songs, filters, overlap } = get();
-    const matchedIds = overlap ? new Set(overlap.matchedIds) : null;
-    return songs
-      .filter((song) => {
-        if (!matchesFilters(song, filters)) return false;
-        if (!matchedIds) return true;
-        return overlap!.mode === 'overlap' ? matchedIds.has(song.id) : !matchedIds.has(song.id);
-      })
-      .sort((a, b) => {
-        const bySinger = (a.singer ?? '').localeCompare(b.singer ?? '', 'zh-CN', {
-          sensitivity: 'base',
-        });
-        return bySinger !== 0
-          ? bySinger
-          : a.name.localeCompare(b.name, 'zh-CN', { sensitivity: 'base' });
-      });
   },
 }));

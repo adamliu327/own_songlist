@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useDebounce } from './useDebounce';
 import { searchCandidates } from '@/lib/api';
+import { errorDetail } from '@/lib/utils';
 import type { SearchCandidate } from '@/types';
 
 export function useSearchSource() {
@@ -33,12 +34,13 @@ export function useSearchSource() {
               singer: item.singer,
               cover: item.cover,
               album: item.album,
+              duration: item.duration,
             }))
           );
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : '搜索失败');
+          setError(errorDetail(err) || '搜索失败，请稍后重试');
           setCandidates([]);
         }
       } finally {
@@ -65,7 +67,8 @@ export function useSearchSource() {
     keyword,
     setKeyword,
     candidates,
-    isLoading,
+    // 防抖等待期间也算加载中
+    isLoading: isLoading || keyword.trim() !== debouncedKeyword.trim(),
     error,
     reset,
   };

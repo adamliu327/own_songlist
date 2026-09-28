@@ -1,43 +1,27 @@
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { renderDanmaku } from '@/lib/utils';
+import { writeClipboard } from '@/lib/clipboard';
 import { useConfigStore } from '@/stores/configStore';
 import type { Song } from '@/types';
 
+/** 复制点歌弹幕，返回是否成功；失败时弹 toast，成功的反馈由调用方自己显示 */
 export function useDanmakuCopy() {
-  const { config } = useConfigStore();
+  const template = useConfigStore((s) => s.config.danmakuTemplate);
 
-  const copy = useCallback(
+  return useCallback(
     async (song: Song) => {
-      const text = renderDanmaku(config.danmakuTemplate, song);
-
+      const text = renderDanmaku(template, song);
       try {
-        if (window.isSecureContext && navigator.clipboard?.writeText) {
-          await navigator.clipboard.writeText(text);
-        } else {
-          const textarea = document.createElement('textarea');
-          textarea.value = text;
-          textarea.style.position = 'fixed';
-          textarea.style.opacity = '0';
-          document.body.appendChild(textarea);
-          textarea.select();
-          const success = document.execCommand('copy');
-          document.body.removeChild(textarea);
-          if (!success) {
-            throw new Error('execCommand copy failed');
-          }
-        }
-        toast.success('已复制点歌弹幕', {
-          description: text,
-        });
+        await writeClipboard(text);
+        return true;
       } catch (err) {
         toast.error('复制失败', {
           description: err instanceof Error ? err.message : '请手动复制',
         });
+        return false;
       }
     },
-    [config.danmakuTemplate]
+    [template],
   );
-
-  return { copy };
 }
