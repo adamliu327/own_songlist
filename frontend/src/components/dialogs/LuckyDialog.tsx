@@ -65,8 +65,9 @@ function LuckyBody({ pool }: { pool: Song[] }) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const copiedTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const spin = useRef<AnimationPlaybackControlsWithThen>(null);
-  // 每抽一次 +1，驱动下面的 layout effect 开转
+  // 每抽一次 +1，驱动下面的 layout effect 开转；目标位置在 roll 里算好
   const [spinCount, setSpinCount] = useState(0);
+  const spinTarget = useRef(0);
 
   const y = useMotionValue(0);
   // 转得越快越糊，停下时清晰
@@ -86,25 +87,25 @@ function LuckyBody({ pool }: { pool: Song[] }) {
     }
 
     // 当前这格放到第一位接着转，画面不会跳
-    setReel([current, ...Array.from({ length: SPIN_CELLS }, () => toCell(randomOf(songs))), toCell(next)]);
+    const nextReel = [current, ...Array.from({ length: SPIN_CELLS }, () => toCell(randomOf(songs))), toCell(next)];
+    spinTarget.current = -(nextReel.length - 1) * CELL;
+    setReel(nextReel);
     setSpinning(true);
     setSpinCount((n) => n + 1);
   }, [reel, songs, reduceMotion]);
 
   // 新转轮渲染好、还没绘制之前再归位并开转；如果在 roll 里直接 y.set(0)，会先闪一帧旧转轮
-  const reelLength = reel.length;
   useLayoutEffect(() => {
     if (spinCount === 0) return;
     y.set(0);
-    const controls = animate(y, -(reelLength - 1) * CELL, { duration: SPIN_DURATION, ease: SPIN_EASE });
+    const controls = animate(y, spinTarget.current, { duration: SPIN_DURATION, ease: SPIN_EASE });
     spin.current = controls;
     controls.then(() => {
       setSpinning(false);
       pop.start({ scale: [1, 1.05, 1], transition: { duration: 0.35, ease: 'easeOut' } });
     });
     return () => controls.stop();
-    // 只在新一轮开始时触发；reelLength 与 spinCount 同一次渲染更新
-  }, [spinCount]);
+  }, [spinCount, y, pop]);
 
   // 打开就转一次
   const started = useRef(false);
