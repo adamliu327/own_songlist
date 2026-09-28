@@ -51,7 +51,7 @@ function SearchBox() {
         spellCheck={false}
         className="h-full min-w-0 flex-1 bg-transparent px-3 text-base text-fg outline-none placeholder:text-fg-muted/70"
       />
-      {keyword ? (
+      {keyword && (
         <button
           type="button"
           onClick={() => {
@@ -63,10 +63,6 @@ function SearchBox() {
         >
           <X className="size-4" />
         </button>
-      ) : (
-        <kbd className="mr-4 hidden h-6 min-w-6 items-center justify-center rounded-md border border-line bg-subtle px-1.5 font-sans text-xs text-fg-muted pointer-fine:flex">
-          /
-        </kbd>
       )}
     </label>
   );

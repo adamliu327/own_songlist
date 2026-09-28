@@ -7,7 +7,7 @@ import type { Song } from '@/types';
 
 /**
  * 主页键盘操作（有弹窗时不生效）：
- * /、⌘K 聚焦搜索；随处打字直接进搜索框；搜索框里 Enter 复制第一首；Esc 清空搜索
+ * ⌘K 聚焦搜索；随处打字直接进搜索框；搜索框里 Enter 复制第一首；Esc 清空搜索
  */
 export function useListHotkeys(songs: Song[]) {
   const copy = useDanmakuCopy();
@@ -25,7 +25,7 @@ export function useListHotkeys(songs: Song[]) {
       if (inOtherField || !search) return;
 
       const mod = e.metaKey || e.ctrlKey;
-      if ((e.key === '/' && (!inSearch || !search.value)) || (mod && e.key.toLowerCase() === 'k')) {
+      if (mod && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         search.focus();
         search.select();
