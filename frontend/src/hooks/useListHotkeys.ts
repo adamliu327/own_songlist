@@ -38,7 +38,8 @@ export function useListHotkeys(songs: Song[]) {
           // 搜索框里回车：复制第一首
           if (inSearch && search.value.trim() && songs[0]) {
             e.preventDefault();
-            copy(songs[0]);
+            const first = songs[0];
+            copy(first).then((ok) => ok && useUiStore.getState().flashCopied(first.id));
           }
           return;
         case 'Escape':

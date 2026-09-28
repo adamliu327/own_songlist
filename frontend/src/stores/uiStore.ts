@@ -15,7 +15,7 @@ export type DialogState =
 
 interface UiState {
   dialog: DialogState | null;
-  /** 刚复制过弹幕的歌曲，用于行内反馈 */
+  /** 主页列表里刚复制过弹幕的歌曲，用于行内反馈 */
   copiedId: string | null;
   openDialog: (dialog: DialogState) => void;
   closeDialog: () => void;

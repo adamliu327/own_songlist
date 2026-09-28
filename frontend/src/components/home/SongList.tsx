@@ -25,7 +25,13 @@ export function SongList({ songs, isLoading, hasSongs }: SongListProps) {
   const canEdit = useCanEdit();
   const copy = useDanmakuCopy();
 
-  const handleCopy = useCallback((song: Song) => copy(song), [copy]);
+  const flashCopied = useUiStore((s) => s.flashCopied);
+  const handleCopy = useCallback(
+    async (song: Song) => {
+      if (await copy(song)) flashCopied(song.id);
+    },
+    [copy, flashCopied],
+  );
   const handleEdit = useCallback((song: Song) => openDialog({ type: 'edit', song }), [openDialog]);
   const handleDelete = useCallback((song: Song) => openDialog({ type: 'delete', song }), [openDialog]);
 

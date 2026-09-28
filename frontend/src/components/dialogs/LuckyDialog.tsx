@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { DialogShell } from '@/components/common/DialogShell';
 import { SongCover } from '@/components/common/SongCover';
 import { LangBadge } from '@/components/common/LangBadge';
-import { useDialog, useUiStore } from '@/stores/uiStore';
+import { useDialog } from '@/stores/uiStore';
 import { useDanmakuCopy } from '@/hooks/useDanmakuCopy';
 import { cn } from '@/lib/utils';
 import type { Song } from '@/types';
@@ -34,7 +34,8 @@ export function LuckyDialog({ pool }: { pool: Song[] }) {
 
 function LuckyBody({ pool }: { pool: Song[] }) {
   const copy = useDanmakuCopy();
-  const copiedId = useUiStore((s) => s.copiedId);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const copiedTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   // 打开弹窗时的歌单快照，抽奖过程中列表变化不影响
   const [songs] = useState(pool);
   const [display, setDisplay] = useState(() => randomOf(songs));
@@ -65,8 +66,18 @@ function LuckyBody({ pool }: { pool: Song[] }) {
 
   useEffect(() => {
     roll();
-    return () => timers.current.forEach(clearTimeout);
+    return () => {
+      timers.current.forEach(clearTimeout);
+      clearTimeout(copiedTimer.current);
+    };
   }, [roll]);
+
+  const copyDisplay = async () => {
+    if (rolling || !(await copy(display))) return;
+    clearTimeout(copiedTimer.current);
+    setCopiedId(display.id);
+    copiedTimer.current = setTimeout(() => setCopiedId(null), 1600);
+  };
 
   const isCopied = !rolling && copiedId === display.id;
 
@@ -120,7 +131,7 @@ function LuckyBody({ pool }: { pool: Song[] }) {
         <Button
           variant={isCopied ? 'mint' : 'peach'}
           size="lg"
-          onClick={() => !rolling && copy(display)}
+          onClick={copyDisplay}
           aria-disabled={rolling}
           autoFocus
           className={cn('flex-1', rolling && 'opacity-60')}
