@@ -40,7 +40,6 @@ export const SongRow = memo(function SongRow({
         role="button"
         tabIndex={-1}
         onClick={() => onCopy(song)}
-        title="点击复制点歌弹幕"
         className={cn(
           'group relative flex cursor-pointer items-center gap-3 rounded-2xl border bg-surface p-2.5 pr-3 transition-[background-color,border-color,box-shadow] duration-200 select-none sm:p-3',
           copied

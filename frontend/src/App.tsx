@@ -69,14 +69,9 @@ function App() {
             )}
           </AnimatePresence>
 
-          <div className="mt-5 mb-3 flex items-center justify-between text-sm text-fg-muted">
-            <span>
-              {filters.keyword || filters.language || overlap
-                ? `找到 ${visible.length} 首`
-                : `共 ${songs.length} 首`}
-            </span>
-            <span className="hidden text-xs sm:pointer-fine:inline">点击歌曲复制点歌弹幕 · 搜索时按 Enter 复制第一首</span>
-          </div>
+          <p className="mt-5 mb-3 text-sm text-fg-muted">
+            {filters.keyword || filters.language || overlap ? `找到 ${visible.length} 首` : `共 ${songs.length} 首`}
+          </p>
 
           <SongList songs={visible} isLoading={isLoading} hasSongs={songs.length > 0} />
         </main>

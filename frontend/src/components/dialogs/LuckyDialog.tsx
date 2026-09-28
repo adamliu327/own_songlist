@@ -129,7 +129,6 @@ function LuckyBody({ pool }: { pool: Song[] }) {
           {isCopied ? '已复制' : '复制弹幕'}
         </Button>
       </div>
-      <p className="mt-3 hidden text-xs text-fg-muted/70 pointer-fine:block">空格 换一首 · Enter 复制</p>
     </div>
   );
 }
