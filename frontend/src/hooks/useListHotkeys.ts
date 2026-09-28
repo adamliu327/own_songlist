@@ -14,11 +14,18 @@ export function useListHotkeys(songs: Song[]) {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      const ui = useUiStore.getState();
-      if (ui.dialog || e.isComposing) return;
+      const target = e.target as HTMLElement;
+      // Radix 在捕获阶段处理 Esc：先关弹窗并 preventDefault，冒泡到这里时 dialog 已经是 null
+      if (
+        useUiStore.getState().dialog ||
+        e.isComposing ||
+        e.defaultPrevented ||
+        target.closest('[role="dialog"], [role="menu"]')
+      ) {
+        return;
+      }
 
       const search = document.getElementById(SEARCH_INPUT_ID) as HTMLInputElement | null;
-      const target = e.target as HTMLElement;
       const inSearch = target === search;
       const inOtherField =
         !inSearch && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
