@@ -6,10 +6,12 @@ interface SongCoverProps {
   src?: string;
   alt: string;
   className?: string;
+  /** 默认懒加载；抽奖转轮里的封面要提前加载 */
+  loading?: 'lazy' | 'eager';
 }
 
 /** 封面：加载完成后淡入，没有封面或加载失败时露出底下的音符占位 */
-export function SongCover({ src, alt, className }: SongCoverProps) {
+export function SongCover({ src, alt, className, loading = 'lazy' }: SongCoverProps) {
   return (
     <div
       className={cn(
@@ -18,19 +20,19 @@ export function SongCover({ src, alt, className }: SongCoverProps) {
       )}
     >
       <Music className="size-[45%] text-pink-300" />
-      {src && <CoverImage key={src} src={src} alt={alt} />}
+      {src && <CoverImage key={src} src={src} alt={alt} loading={loading} />}
     </div>
   );
 }
 
-function CoverImage({ src, alt }: { src: string; alt: string }) {
+function CoverImage({ src, alt, loading }: { src: string; alt: string; loading: 'lazy' | 'eager' }) {
   const [state, setState] = useState<'loading' | 'loaded' | 'failed'>('loading');
   if (state === 'failed') return null;
   return (
     <img
       src={src}
       alt={alt}
-      loading="lazy"
+      loading={loading}
       onLoad={() => setState('loaded')}
       onError={() => setState('failed')}
       className={cn(
