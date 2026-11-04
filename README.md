@@ -13,13 +13,13 @@
 - **一键复制点歌弹幕**：点击歌曲即复制，按自定义模板（支持 `{name}`、`{singer}` 等占位符）生成
 - **键盘操作**：`⌘K` 聚焦搜索，搜索框里 `Enter` 复制第一首，`Esc` 清空搜索
 - **手气不错**：从当前筛选结果里随机抽一首
-- **对比外部歌单**：拉取 songlist.cc 歌单，看重合与差集
-- **下载 LRC 歌词**：搜索网易云音乐，选中歌曲后预览并保存带时间轴的 `.lrc`，有翻译/罗马音时可导出双语
+- **对比外部歌单**：拉取 songlist.cc 歌单，看重合与差集；记住最近对比过的地址，点一下就能再对比
+- **下载歌词**：搜索网易云音乐，选中歌曲后预览并保存带时间轴的 `.lrc` / `.srt`，有翻译/罗马音时可导出双语
 - **编辑锁**：可选设置密码，防止他人误改数据
 
 ## 技术栈
 
-React + Vite + TypeScript + Tailwind CSS + shadcn/ui ｜ FastAPI + SQLite ｜ 音乐搜索依赖 [NeteaseCloudMusicApiEnhanced](https://github.com/neteasecloudmusicapienhanced/api-enhanced)（镜像 `moefurina/ncm-api`）
+React 18 + Vite + TypeScript + [animal-island-ui](https://github.com/guokaigdg/animal-island-ui)（图标 naive-icons）+ zustand ｜ FastAPI + SQLite ｜ 音乐搜索依赖 [NeteaseCloudMusicApiEnhanced](https://github.com/neteasecloudmusicapienhanced/api-enhanced)（镜像 `moefurina/ncm-api`）
 
 整体由三个服务组成：
 
@@ -83,7 +83,7 @@ npx serve dist          # 快速预览
 window.__APP_CONFIG__ = { password: "你的密码" };
 ```
 
-> 本地开发则更简单：后端照上面启动，前端 `npm run dev`（默认 http://localhost:30426，API 默认指向 http://localhost:8000）。
+> 本地开发则更简单：后端照上面启动，前端 `npm run dev`（默认 http://localhost:5173）。开发服务器会把 `/api` 转发到 http://localhost:8000；后端在别处时用 `API_PROXY` 指定，比如 `API_PROXY=http://localhost:30426/api npm run dev`。
 
 ---
 
@@ -148,7 +148,7 @@ docker run -d --name frontend --network songlist \
 
 | 参数 | 说明 | 默认值 |
 |------|------|--------|
-| `VITE_API_URL` | 构建参数，后端 API 地址；Docker 部署固定为 `/api` | `http://localhost:8000` |
+| `VITE_API_URL` | 构建参数，后端 API 地址；Docker 部署固定为 `/api` | `/api` |
 | `PASSWORD` | 前端容器环境变量，编辑锁密码，留空不启用 | 空 |
 
 ## 目录结构
