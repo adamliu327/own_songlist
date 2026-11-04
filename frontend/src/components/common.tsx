@@ -9,7 +9,7 @@ import type { Candidate } from '@/types';
 export function SongCover({ src, size = 48, eager }: { src?: string | null; size?: number; eager?: boolean }) {
   return (
     <span className="cover" style={{ width: size, height: size }}>
-      <MusicIcon size={Math.round(size * 0.42)} />
+      <MusicIcon size={Math.round(size * 0.42)} color="currentColor" />
       {src && <CoverImage key={src} src={src} eager={eager} />}
     </span>
   );
@@ -92,8 +92,8 @@ export function NeteaseSearch({ inputId, renderAction, renderTag, renderExpanded
       <Input
         id={inputId}
         size="large"
-        prefix={<SearchIcon size={18} />}
-        suffix={loading ? <SpinnerIcon size={18} className="spin" /> : null}
+        prefix={<SearchIcon size={18} color="currentColor" />}
+        suffix={loading ? <SpinnerIcon size={18} color="currentColor" className="spin" /> : null}
         value={keyword}
         onChange={(e) => setKeyword(e.target.value)}
         placeholder="搜索网易云音乐：歌名、歌手"

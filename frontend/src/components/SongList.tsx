@@ -40,7 +40,7 @@ export function SongList({ songs }: { songs: Song[] }) {
         description="搜索网易云、手动录入，或者从网易云歌单一次导入"
         extra={
           canEdit && (
-            <Button type="primary" icon={<PlusIcon size={18} />} onClick={() => openDialog({ type: 'add' })}>
+            <Button type="primary" icon={<PlusIcon size={18} color="currentColor" />} onClick={() => openDialog({ type: 'add' })}>
               添加第一首歌
             </Button>
           )
@@ -134,7 +134,7 @@ const SongRow = memo(function SongRow({ song, keyword, copied, canEdit, onCopy }
             <Button
               type="text"
               size="small"
-              icon={<PencilIcon size={16} />}
+              icon={<PencilIcon size={16} color="currentColor" />}
               aria-label="编辑"
               title="编辑"
               onClick={() => openDialog({ type: 'edit', song })}
@@ -142,7 +142,7 @@ const SongRow = memo(function SongRow({ song, keyword, copied, canEdit, onCopy }
             <Button
               type="text"
               size="small"
-              icon={<TrashIcon size={16} />}
+              icon={<TrashIcon size={16} color="currentColor" />}
               aria-label="删除"
               title="删除"
               onClick={() => openDialog({ type: 'delete', song })}
@@ -151,7 +151,7 @@ const SongRow = memo(function SongRow({ song, keyword, copied, canEdit, onCopy }
         )}
 
         <span className={copied ? 'copy-badge is-copied' : 'copy-badge'} aria-hidden>
-          {copied ? <CheckIcon size={18} /> : <CopyIcon size={16} />}
+          {copied ? <CheckIcon size={18} color="currentColor" /> : <CopyIcon size={16} color="currentColor" />}
         </span>
       </Card>
     </li>

@@ -30,7 +30,7 @@ export function CompareBar({ overlap }: { overlap: Overlap }) {
       <Button
         type="text"
         size="small"
-        icon={<CloseIcon size={16} />}
+        icon={<CloseIcon size={16} color="currentColor" />}
         aria-label="退出对比"
         title="退出对比"
         onClick={() => setOverlap(null)}

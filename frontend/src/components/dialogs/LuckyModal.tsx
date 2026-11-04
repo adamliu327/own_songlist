@@ -84,13 +84,13 @@ export function LuckyModal({ pool }: { pool: Song[] }) {
       onClose={closeDialog}
       footer={
         <>
-          <Button icon={<RefreshIcon size={18} />} onClick={roll} disabled={spinning || songs.length < 2}>
+          <Button icon={<RefreshIcon size={18} color="currentColor" />} onClick={roll} disabled={spinning || songs.length < 2}>
             换一首
           </Button>
           {/* 不用 disabled：转动时焦点要留在这里，停下后按 Enter 直接复制 */}
           <Button
             type="primary"
-            icon={copied ? <CheckIcon size={18} /> : <CopyIcon size={18} />}
+            icon={copied ? <CheckIcon size={18} color="currentColor" /> : <CopyIcon size={18} color="currentColor" />}
             onClick={copyResult}
             aria-disabled={spinning}
           >

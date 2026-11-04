@@ -108,11 +108,11 @@ function SearchAddPanel() {
       }
       renderAction={(c) =>
         expandedId === c.external_id ? (
-          <Button type="text" size="small" icon={<CloseIcon size={16} />} aria-label="收起" onClick={() => setExpandedId(null)} />
+          <Button type="text" size="small" icon={<CloseIcon size={16} color="currentColor" />} aria-label="收起" onClick={() => setExpandedId(null)} />
         ) : (
           <Button
             size="small"
-            icon={<PlusIcon size={16} />}
+            icon={<PlusIcon size={16} color="currentColor" />}
             onClick={() => {
               setExpandedId(c.external_id);
               setRemark('');
@@ -210,7 +210,7 @@ function ImportPanel() {
           id="import-url"
           className="grow"
           size="large"
-          prefix={<LinkIcon size={18} />}
+          prefix={<LinkIcon size={18} color="currentColor" />}
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="粘贴网易云歌单分享链接"

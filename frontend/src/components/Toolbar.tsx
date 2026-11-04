@@ -22,7 +22,7 @@ export function Toolbar({ languageCounts, totalBeforeLanguage, canShuffle }: Too
           className="grow"
           size="large"
           shadow
-          prefix={<SearchIcon size={18} />}
+          prefix={<SearchIcon size={18} color="currentColor" />}
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           allowClear
@@ -50,19 +50,20 @@ export function MobileActions({ canShuffle }: { canShuffle: boolean }) {
   );
 }
 
+/** 两个并列的主要操作，都用主按钮，和带厚度的搜索框底边对齐 */
 function PrimaryActions({ canShuffle }: { canShuffle: boolean }) {
   const canEdit = useCanEdit();
   return (
     <>
-      <Button size="large" icon={<SparklesIcon size={18} />} disabled={!canShuffle} onClick={() => openDialog({ type: 'lucky' })}>
+      <Button type="primary" size="large" icon={<SparklesIcon size={18} color="currentColor" />} disabled={!canShuffle} onClick={() => openDialog({ type: 'lucky' })}>
         手气不错
       </Button>
       {canEdit ? (
-        <Button type="primary" size="large" icon={<PlusIcon size={18} />} onClick={() => openDialog({ type: 'add' })}>
+        <Button type="primary" size="large" icon={<PlusIcon size={18} color="currentColor" />} onClick={() => openDialog({ type: 'add' })}>
           添加歌曲
         </Button>
       ) : (
-        <Button size="large" icon={<LockIcon size={18} />} onClick={() => openDialog({ type: 'unlock' })}>
+        <Button type="primary" size="large" icon={<LockIcon size={18} color="currentColor" />} onClick={() => openDialog({ type: 'unlock' })}>
           解锁编辑
         </Button>
       )}

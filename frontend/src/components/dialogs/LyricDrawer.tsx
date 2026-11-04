@@ -107,7 +107,7 @@ function LyricResultView({ picked: { candidate, lyric }, onBack }: { picked: Pic
           <p className="song-name truncate">{candidate.name}</p>
           <p className="song-sub truncate">{candidate.singer}</p>
         </div>
-        <Button type="text" size="small" icon={<ArrowLeftIcon size={16} />} onClick={onBack}>
+        <Button type="text" size="small" icon={<ArrowLeftIcon size={16} color="currentColor" />} onClick={onBack}>
           换一首
         </Button>
       </div>
@@ -124,13 +124,13 @@ function LyricResultView({ picked: { candidate, lyric }, onBack }: { picked: Pic
       <LrcPreview text={lrcText} />
 
       <div className="row wrap end">
-        <Button icon={<CopyIcon size={16} />} onClick={copy}>
+        <Button icon={<CopyIcon size={16} color="currentColor" />} onClick={copy}>
           复制
         </Button>
-        <Button icon={<DownloadIcon size={16} />} onClick={() => download('srt')} title="给剪映等剪辑软件用">
+        <Button icon={<DownloadIcon size={16} color="currentColor" />} onClick={() => download('srt')} title="给剪映等剪辑软件用">
           下载 .srt
         </Button>
-        <Button type="primary" icon={<DownloadIcon size={16} />} onClick={() => download('lrc')} title="给音乐播放器用">
+        <Button type="primary" icon={<DownloadIcon size={16} color="currentColor" />} onClick={() => download('lrc')} title="给音乐播放器用">
           下载 .lrc
         </Button>
       </div>
