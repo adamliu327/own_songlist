@@ -92,6 +92,7 @@ export function NeteaseSearch({ inputId, renderAction, renderTag, renderExpanded
       <Input
         id={inputId}
         size="large"
+        shadow
         prefix={<SearchIcon size={18} color="currentColor" />}
         suffix={loading ? <SpinnerIcon size={18} color="currentColor" className="spin" /> : null}
         value={keyword}

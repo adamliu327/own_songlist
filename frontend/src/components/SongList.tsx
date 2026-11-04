@@ -28,7 +28,7 @@ export function SongList({ songs }: { songs: Song[] }) {
       <NoData
         title="歌单加载失败"
         description="连不上后端服务，确认它在运行后重试"
-        extra={<Button onClick={init}>重试</Button>}
+        extra={<Button type="primary" onClick={init}>重试</Button>}
       />
     );
   }
@@ -57,6 +57,7 @@ export function SongList({ songs }: { songs: Song[] }) {
         description="换个关键词，或者清除语言筛选试试"
         extra={
           <Button
+            type="primary"
             onClick={() => {
               setKeyword('');
               setLanguage('');

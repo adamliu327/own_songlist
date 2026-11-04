@@ -35,7 +35,7 @@ export function EditSongModal({ song }: { song: Song }) {
       onClose={closeDialog}
       footer={
         <>
-          <Button onClick={closeDialog}>取消</Button>
+          <Button type="primary" onClick={closeDialog}>取消</Button>
           <Button type="primary" htmlType="submit" form="edit-song-form" loading={saving} disabled={!draft.name.trim()}>
             保存
           </Button>
@@ -73,7 +73,7 @@ export function DeleteSongModal({ song }: { song: Song }) {
       onClose={closeDialog}
       footer={
         <>
-          <Button onClick={closeDialog}>取消</Button>
+          <Button type="primary" onClick={closeDialog}>取消</Button>
           <Button type="primary" danger loading={deleting} onClick={remove}>
             删除
           </Button>

@@ -136,7 +136,7 @@ function SettingsForm() {
           {confirmReset ? '再点一次确认' : '恢复默认'}
         </Button>
         <div className="row">
-          <Button onClick={closeDialog}>取消</Button>
+          <Button type="primary" onClick={closeDialog}>取消</Button>
           <Button type="primary" htmlType="submit" loading={saving}>
             保存
           </Button>

@@ -124,10 +124,10 @@ function LyricResultView({ picked: { candidate, lyric }, onBack }: { picked: Pic
       <LrcPreview text={lrcText} />
 
       <div className="row wrap end">
-        <Button icon={<CopyIcon size={16} color="currentColor" />} onClick={copy}>
+        <Button type="primary" icon={<CopyIcon size={16} color="currentColor" />} onClick={copy}>
           复制
         </Button>
-        <Button icon={<DownloadIcon size={16} color="currentColor" />} onClick={() => download('srt')} title="给剪映等剪辑软件用">
+        <Button type="primary" icon={<DownloadIcon size={16} color="currentColor" />} onClick={() => download('srt')} title="给剪映等剪辑软件用">
           下载 .srt
         </Button>
         <Button type="primary" icon={<DownloadIcon size={16} color="currentColor" />} onClick={() => download('lrc')} title="给音乐播放器用">

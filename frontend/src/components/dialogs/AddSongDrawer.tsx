@@ -135,6 +135,7 @@ function SearchAddPanel() {
             <div className="row">
               <Input
                 className="grow"
+                shadow
                 value={remark}
                 onChange={(e) => setRemark(e.target.value)}
                 placeholder="备注（可选）"
@@ -210,6 +211,7 @@ function ImportPanel() {
           id="import-url"
           className="grow"
           size="large"
+          shadow
           prefix={<LinkIcon size={18} color="currentColor" />}
           value={url}
           onChange={(e) => setUrl(e.target.value)}

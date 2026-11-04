@@ -60,6 +60,7 @@ export function CompareModal() {
           <Input
             className="grow"
             size="large"
+            shadow
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="网址、域名或 B 站 uid"
