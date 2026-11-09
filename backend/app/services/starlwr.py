@@ -1,6 +1,4 @@
-import re
-import unicodedata
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Tuple
 from urllib.parse import urlparse, parse_qs
 
 import httpx
@@ -73,26 +71,5 @@ async def fetch_external_songlist(raw_url: str) -> Dict[str, Any]:
 
     return {
         "title": view.get("title"),
-        "uid": view.get("uid"),
         "songs": view.get("songs") or [],
     }
-
-
-def normalize_name(name: str) -> str:
-    """歌名归一化：全角转半角、转小写、去掉所有空白。用于宽松匹配。"""
-    if not name:
-        return ""
-    s = unicodedata.normalize("NFKC", name)
-    s = s.lower()
-    s = re.sub(r"\s+", "", s)
-    return s.strip()
-
-
-def index_external_by_name(songs: List[dict]) -> Dict[str, List[dict]]:
-    """把外部歌单按归一化歌名建索引（同名可能对应多首）。"""
-    index: Dict[str, List[dict]] = {}
-    for song in songs:
-        key = normalize_name(song.get("name") or "")
-        if key:
-            index.setdefault(key, []).append(song)
-    return index

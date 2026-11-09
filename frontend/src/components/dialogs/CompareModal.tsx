@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button, Input, Modal, Notification, Tag } from 'animal-island-ui';
 import { api } from '@/api';
 import { Field } from '@/components/SongForm';
-import { errorText } from '@/lib/constants';
+import { notifyError } from '@/lib/notify';
 import { closeDialog, setOverlap } from '@/store';
 
 // 最近对比过的歌单，存在浏览器里，点一下就能再对比
@@ -40,7 +40,7 @@ export function CompareModal() {
       Notification.success({ message: `和「${title}」重合 ${data.matched_count} 首` });
       closeDialog();
     } catch (err) {
-      Notification.error({ message: '对比失败', description: errorText(err) });
+      notifyError('对比失败', err);
     } finally {
       setRunning(null);
     }

@@ -3,7 +3,8 @@ import httpx
 import pytest
 
 from app.errors import UserError
-from app.services.starlwr import normalize_name, normalize_target
+from app.services.matching import normalize_name
+from app.services.starlwr import normalize_target
 
 
 @pytest.mark.parametrize(
@@ -57,9 +58,7 @@ def test_compare_returns_the_local_songs_that_overlap(client, upstream):
 
     result = client.post("/compare/external", json={"url": "abc"}).json()
 
-    assert result["source_title"] == "主播的歌单"
-    assert result["matched_count"] == 1
-    assert [item["local_id"] for item in result["items"]] == [sunny["id"]]
+    assert result == {"source_title": "主播的歌单", "matched_count": 1, "items": [{"local_id": sunny["id"]}]}
 
 
 def test_disabled_songlist_gets_a_readable_error(client, upstream):

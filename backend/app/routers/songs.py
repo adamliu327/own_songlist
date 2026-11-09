@@ -1,38 +1,23 @@
-import uuid
-from typing import Optional
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.auth import require_unlock
 from app.database import get_db
 from app.models import Song as SongModel
 from app.schemas import SongCreate, SongUpdate, SongResponse, SongBatchRequest, SongBatchResponse
-from app.services.starlwr import normalize_name
+from app.services.matching import local_song_keys, song_key
 
 router = APIRouter()
 
 
 @router.get("/", response_model=list[SongResponse])
-def list_songs(
-    keyword: Optional[str] = Query(None),
-    language: Optional[str] = Query(None),
-    style: Optional[str] = Query(None),
-    db: Session = Depends(get_db),
-):
-    query = db.query(SongModel)
-    if keyword:
-        query = query.filter(
-            SongModel.name.ilike(f"%{keyword}%") | SongModel.singer.ilike(f"%{keyword}%")
-        )
-    if language:
-        query = query.filter(SongModel.language == language)
-    if style:
-        query = query.filter(SongModel.style == style)
-    return query.order_by(SongModel.created_at.desc()).all()
+def list_songs(db: Session = Depends(get_db)):
+    """全部歌曲。搜索和筛选都在前端做。"""
+    return db.query(SongModel).order_by(SongModel.created_at.desc()).all()
 
 
 @router.post("/", response_model=SongResponse, dependencies=[Depends(require_unlock)])
 def create_song(song: SongCreate, db: Session = Depends(get_db)):
-    db_song = SongModel(id=str(uuid.uuid4()), **song.model_dump())
+    db_song = SongModel(**song.model_dump())
     db.add(db_song)
     db.commit()
     db.refresh(db_song)
@@ -42,30 +27,19 @@ def create_song(song: SongCreate, db: Session = Depends(get_db)):
 @router.post("/batch", response_model=SongBatchResponse, dependencies=[Depends(require_unlock)])
 def batch_create_songs(body: SongBatchRequest, db: Session = Depends(get_db)):
     """批量创建歌曲，按（歌名, 歌手）归一化去重，已存在的跳过。"""
-    existing = {
-        (normalize_name(s.name), normalize_name(s.singer or ""))
-        for s in db.query(SongModel).all()
-    }
+    existing = local_song_keys(db)
     created = 0
     skipped = 0
     for item in body.items:
-        key = (normalize_name(item.name), normalize_name(item.singer or ""))
+        key = song_key(item.name, item.singer)
         if key in existing:
             skipped += 1
             continue
         existing.add(key)
-        db.add(SongModel(id=str(uuid.uuid4()), **item.model_dump()))
+        db.add(SongModel(**item.model_dump()))
         created += 1
     db.commit()
     return SongBatchResponse(created=created, skipped=skipped)
-
-
-@router.get("/{song_id}", response_model=SongResponse)
-def get_song(song_id: str, db: Session = Depends(get_db)):
-    db_song = db.query(SongModel).filter(SongModel.id == song_id).first()
-    if not db_song:
-        raise HTTPException(status_code=404, detail="歌曲不存在")
-    return db_song
 
 
 @router.put("/{song_id}", response_model=SongResponse, dependencies=[Depends(require_unlock)])

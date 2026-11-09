@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Button, Drawer, Input, Notification } from 'animal-island-ui';
 import { LangPicker } from '@/components/common';
 import { Field } from '@/components/SongForm';
-import { DEFAULT_CONFIG, SAMPLE_SONG, errorText, renderDanmaku } from '@/lib/constants';
+import { DEFAULT_CONFIG, SAMPLE_SONG, renderDanmaku } from '@/lib/constants';
+import { notifyError } from '@/lib/notify';
 import { closeDialog, resetConfig, saveConfig, setLanguage, useStore } from '@/store';
 import type { AppConfig } from '@/types';
 
@@ -72,7 +73,7 @@ function SettingsForm() {
       Notification.success({ message: '设置已保存' });
       closeDialog();
     } catch (err) {
-      Notification.error({ message: '保存失败', description: errorText(err) });
+      notifyError('保存失败', err);
       setSaving(false);
     }
   };
@@ -91,7 +92,7 @@ function SettingsForm() {
       if (restored.default_language_filter !== config.default_language_filter) setLanguage(restored.default_language_filter);
       Notification.success({ message: '已恢复默认设置' });
     } catch (err) {
-      Notification.error({ message: '恢复失败', description: errorText(err) });
+      notifyError('恢复失败', err);
     }
   };
 

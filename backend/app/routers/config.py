@@ -13,7 +13,6 @@ DEFAULT_CONFIG = {
     "playlist_name": "我的点歌单",
     "danmaku_template": "点歌 {name}",
     "default_language_filter": "",
-    "theme": "system",
 }
 
 
@@ -24,9 +23,8 @@ class ConfigUpdate(BaseModel):
 @router.get("/")
 def get_config(db: Session = Depends(get_db)):
     rows = {row.key: row.value for row in db.query(ConfigModel).all()}
-    result = dict(DEFAULT_CONFIG)
-    result.update(rows)
-    return result
+    # 只返回现在还认的配置项；旧版本存下的其他项（比如主题）留在库里，但不再往外给
+    return {key: rows.get(key, default) for key, default in DEFAULT_CONFIG.items()}
 
 
 @router.put("/", dependencies=[Depends(require_unlock)])

@@ -10,7 +10,6 @@ class Song(Base):
     name = Column(String(255), nullable=False, index=True)
     singer = Column(String(255), index=True)
     language = Column(String(50), index=True)
-    style = Column(String(50), index=True)
     remark = Column(Text)
     cover = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -6,7 +6,8 @@ import { LangPicker, NeteaseSearch, SongCover } from '@/components/common';
 import { Field, SongForm } from '@/components/SongForm';
 import { EMPTY_DRAFT, trimDraft } from '@/lib/draft';
 import { useFocusOnOpen } from '@/hooks';
-import { errorText } from '@/lib/constants';
+import { notifyError } from '@/lib/notify';
+import { songKey } from '@/lib/songKey';
 import { addSong, closeDialog, reloadSongs, useStore } from '@/store';
 import type { Candidate, PlaylistPreview } from '@/types';
 
@@ -55,9 +56,6 @@ function AddPanels({ tab }: { tab: Tab }) {
   );
 }
 
-const songKey = (name: string, singer?: string | null) =>
-  `${name.trim().toLowerCase()}|${(singer ?? '').trim().toLowerCase()}`;
-
 function SearchAddPanel() {
   const songs = useStore((s) => s.songs);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -90,7 +88,7 @@ function SearchAddPanel() {
       Notification.success({ message: `已添加「${c.name}」` });
       setExpandedId(null);
     } catch (err) {
-      Notification.error({ message: '添加失败', description: errorText(err) });
+      notifyError('添加失败', err);
     } finally {
       setSaving(false);
     }
@@ -170,7 +168,7 @@ function ImportPanel() {
       setPreview(data);
       setSelected(data.items.filter((i) => !i.exists).map((i) => i.external_id));
     } catch (err) {
-      Notification.error({ message: '获取歌单失败', description: errorText(err) });
+      notifyError('获取歌单失败', err);
     } finally {
       setLoading(false);
     }
@@ -194,7 +192,7 @@ function ImportPanel() {
       setUrl('');
       closeDialog();
     } catch (err) {
-      Notification.error({ message: '导入失败', description: errorText(err) });
+      notifyError('导入失败', err);
     } finally {
       setImporting(false);
     }
@@ -296,7 +294,7 @@ function ManualPanel() {
       setDraft(EMPTY_DRAFT);
       document.getElementById('manual-name')?.focus();
     } catch (err) {
-      Notification.error({ message: '添加失败', description: errorText(err) });
+      notifyError('添加失败', err);
     } finally {
       setSaving(false);
     }
