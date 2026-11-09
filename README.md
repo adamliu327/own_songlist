@@ -160,6 +160,23 @@ docker run -d --name frontend --network songlist \
 |------|------|--------|
 | `VITE_API_URL` | 构建参数，后端 API 地址；Docker 部署固定为 `/api` | `/api` |
 
+## 测试
+
+```bash
+# 后端
+cd backend
+.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/pytest
+
+# 前端
+cd frontend
+npm test          # 单元测试
+npm run lint
+npm run build     # 先做类型检查，再打包
+```
+
+测试不访问网易云和 songlist.cc，对外请求都是模拟的；后端用临时数据库，不会碰 `data/` 里的歌单。推送到 `main` 和每个 PR 都会由 GitHub Actions 跑一遍，见 `.github/workflows/ci.yml`。
+
 ## 目录结构
 
 ```text
