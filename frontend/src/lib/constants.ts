@@ -28,11 +28,14 @@ export function renderDanmaku(
   template: string,
   song: { name: string; singer?: string | null; language?: string | null },
 ) {
-  return template
-    .replace(/\{name\}/g, song.name)
-    .replace(/\{singer\}/g, song.singer ?? '')
-    .replace(/\{language\}/g, song.language ?? '')
-    .trim();
+  const values: Record<string, string> = {
+    name: song.name,
+    singer: song.singer ?? '',
+    language: song.language ?? '',
+  };
+  // 用函数做替换：直接传字符串的话，歌名里的 $$、$& 会被 replace 当成特殊写法改掉。
+  // 一次替换完所有占位符，歌名里碰巧带 {singer} 这种字样也不会被二次替换
+  return template.replace(/\{(name|singer|language)\}/g, (_, key: string) => values[key]).trim();
 }
 
 export const errorText = (err: unknown) => (err instanceof Error ? err.message : '请稍后重试');
