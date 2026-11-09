@@ -49,7 +49,12 @@ export function LuckyModal({ pool }: { pool: Song[] }) {
     );
     anim.onfinish = () => setReel((r) => r.slice(-1));
     animation.current = anim;
-    return () => anim.cancel();
+    return () => {
+      anim.cancel();
+      // 取消后不能再留着它：停下后点转轮会对它调 finish()，把动画重新套回轨道，
+      // 而这时轨道上只剩一格，结果就被推出窗口看不见了
+      animation.current = null;
+    };
   }, [reel]);
 
   const roll = () => {
