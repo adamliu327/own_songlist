@@ -32,16 +32,24 @@ function parseLrc(text: string): ParsedLrc {
     const line = rawLine.trim();
     if (!line) continue;
 
-    const timeMatch = TIME_TAG_RE.exec(line);
-    if (timeMatch) {
-      const [tag, minutes, seconds, fraction = ''] = timeMatch;
-      // 两位小数是厘秒、三位是毫秒，补齐到毫秒再比较
-      const fractionMs = fraction ? Number(fraction.padEnd(3, '0')) : 0;
-      lines.push({
-        timeMs: Number(minutes) * 60_000 + Number(seconds) * 1_000 + fractionMs,
-        raw: line,
-        text: line.slice(tag.length).trim(),
-      });
+    // 一行可以连着带几个时间标签，表示同一句在这几个时间点各唱一次，拆成每个时间点一行
+    const tags: RegExpExecArray[] = [];
+    let rest = line;
+    for (let m = TIME_TAG_RE.exec(rest); m; m = TIME_TAG_RE.exec(rest)) {
+      tags.push(m);
+      rest = rest.slice(m[0].length);
+    }
+
+    if (tags.length > 0) {
+      for (const [tag, minutes, seconds, fraction = ''] of tags) {
+        // 两位小数是厘秒、三位是毫秒，补齐到毫秒再比较
+        const fractionMs = fraction ? Number(fraction.padEnd(3, '0')) : 0;
+        lines.push({
+          timeMs: Number(minutes) * 60_000 + Number(seconds) * 1_000 + fractionMs,
+          raw: tag + rest,
+          text: rest.trim(),
+        });
+      }
       continue;
     }
 
@@ -53,6 +61,9 @@ function parseLrc(text: string): ParsedLrc {
   lines.sort((a, b) => a.timeMs - b.timeMs);
   return { meta, lines };
 }
+
+/** 歌词里有没有带时间轴的句子。网易云有些歌只收录了纯文本歌词，做不了 .lrc / .srt */
+export const hasTimeline = (lyric: string): boolean => parseLrc(lyric).lines.some((line) => line.text);
 
 function metaTags(meta: string[], name?: string, singer?: string): string[] {
   const tagKey = (tag: string) => META_TAG_RE.exec(tag)?.[1].toLowerCase();

@@ -85,7 +85,10 @@ function SettingsForm() {
     setConfirmReset(false);
     try {
       await resetConfig();
-      setDraft(pickConfig(useStore.getState().config));
+      const restored = useStore.getState().config;
+      setDraft(pickConfig(restored));
+      // 和保存时一样：默认语言变了，主页当前的筛选也跟着变
+      if (restored.default_language_filter !== config.default_language_filter) setLanguage(restored.default_language_filter);
       Notification.success({ message: '已恢复默认设置' });
     } catch (err) {
       Notification.error({ message: '恢复失败', description: errorText(err) });

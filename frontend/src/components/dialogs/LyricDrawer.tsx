@@ -6,7 +6,7 @@ import { NeteaseSearch, SongCover } from '@/components/common';
 import { useFocusOnOpen } from '@/hooks';
 import { writeClipboard } from '@/lib/clipboard';
 import { errorText } from '@/lib/constants';
-import { buildLrc, buildSrt, downloadTextFile, subtitleFilename, type LrcFormat } from '@/lib/lrc';
+import { buildLrc, buildSrt, downloadTextFile, hasTimeline, subtitleFilename, type LrcFormat } from '@/lib/lrc';
 import { closeDialog } from '@/store';
 import type { Candidate, LyricResult } from '@/types';
 
@@ -69,6 +69,8 @@ export function LyricDrawer({ open }: { open: boolean }) {
 }
 
 function LyricResultView({ picked: { candidate, lyric }, onBack }: { picked: Picked; onBack: () => void }) {
+  // 网易云有些歌只收录了纯文本歌词：没有时间轴，做不了 .lrc / .srt，但还能看、能复制
+  const timed = useMemo(() => hasTimeline(lyric.lyric!), [lyric]);
   const formats: LrcFormat[] = [
     'original',
     ...(lyric.translation ? (['translation'] as const) : []),
@@ -77,9 +79,13 @@ function LyricResultView({ picked: { candidate, lyric }, onBack }: { picked: Pic
   const [format, setFormat] = useState<LrcFormat>(lyric.translation ? 'translation' : 'original');
   const extra = format === 'translation' ? lyric.translation : format === 'romaji' ? lyric.romaji : null;
 
+  // 预览和复制用的文本；没有时间轴时就是歌词原文
   const lrcText = useMemo(
-    () => buildLrc({ lyric: lyric.lyric!, extra, name: candidate.name, singer: candidate.singer }),
-    [lyric, extra, candidate],
+    () =>
+      timed
+        ? buildLrc({ lyric: lyric.lyric!, extra, name: candidate.name, singer: candidate.singer })
+        : lyric.lyric!.trim(),
+    [timed, lyric, extra, candidate],
   );
 
   const download = (ext: 'lrc' | 'srt') => {
@@ -112,7 +118,7 @@ function LyricResultView({ picked: { candidate, lyric }, onBack }: { picked: Pic
         </Button>
       </div>
 
-      {formats.length > 1 && (
+      {timed && formats.length > 1 && (
         <Radio
           direction="horizontal"
           value={format}
@@ -127,18 +133,22 @@ function LyricResultView({ picked: { candidate, lyric }, onBack }: { picked: Pic
         <Button type="primary" icon={<CopyIcon size={16} color="currentColor" />} onClick={copy}>
           复制
         </Button>
-        <Button type="primary" icon={<DownloadIcon size={16} color="currentColor" />} onClick={() => download('srt')} title="给剪映等剪辑软件用">
+        <Button type="primary" icon={<DownloadIcon size={16} color="currentColor" />} onClick={() => download('srt')} disabled={!timed} title="给剪映等剪辑软件用">
           下载 .srt
         </Button>
-        <Button type="primary" icon={<DownloadIcon size={16} color="currentColor" />} onClick={() => download('lrc')} title="给音乐播放器用">
+        <Button type="primary" icon={<DownloadIcon size={16} color="currentColor" />} onClick={() => download('lrc')} disabled={!timed} title="给音乐播放器用">
           下载 .lrc
         </Button>
       </div>
 
-      <p className="hint">
-        .lrc 给音乐播放器用，.srt 给剪映等剪辑软件用。.srt 每句的结束时间优先按原歌词的空行断句，否则取下一句开始前 0.2
-        秒，末句挂到歌曲结束；双语会并进同一条字幕的两行（译文在上）。
-      </p>
+      {timed ? (
+        <p className="hint">
+          .lrc 给音乐播放器用，.srt 给剪映等剪辑软件用。.srt 每句的结束时间优先按原歌词的空行断句，否则取下一句开始前 0.2
+          秒，末句挂到歌曲结束；双语会并进同一条字幕的两行（译文在上）。
+        </p>
+      ) : (
+        <p className="hint">网易云只收录了这首歌的纯文本歌词，没有时间轴，生成不了 .lrc 和 .srt，只能复制文本。</p>
+      )}
     </div>
   );
 }
