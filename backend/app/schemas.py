@@ -1,32 +1,33 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class SongBase(BaseModel):
-    name: str = Field(..., min_length=1)
-    singer: Optional[str] = None
-    language: Optional[str] = None
-    style: Optional[str] = None
-    remark: Optional[str] = None
-    cover: Optional[str] = None
+class SongCreate(BaseModel):
+    # 写入时去掉首尾空白并限制长度；纯空格的歌名去掉后为空，会被 min_length 拦下
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    name: str = Field(..., min_length=1, max_length=500)
+    singer: Optional[str] = Field(None, max_length=500)
+    language: Optional[str] = Field(None, max_length=50)
+    style: Optional[str] = Field(None, max_length=50)
+    remark: Optional[str] = Field(None, max_length=2000)
+    cover: Optional[str] = Field(None, max_length=2000)
 
 
-class SongCreate(SongBase):
-    pass
+class SongUpdate(SongCreate):
+    name: Optional[str] = Field(None, min_length=1, max_length=500)
 
 
-class SongUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1)
-    singer: Optional[str] = None
-    language: Optional[str] = None
-    style: Optional[str] = None
-    remark: Optional[str] = None
-    cover: Optional[str] = None
-
-
-class SongResponse(SongBase):
+class SongResponse(BaseModel):
+    # 不继承上面的限制：库里已有的数据原样返回，不能因为某一条超长就让整个列表报错
     id: str
+    name: str
+    singer: Optional[str] = None
+    language: Optional[str] = None
+    style: Optional[str] = None
+    remark: Optional[str] = None
+    cover: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -58,7 +59,7 @@ class LyricResponse(BaseModel):
 
 class ConfigItem(BaseModel):
     key: str
-    value: str
+    value: str = Field(..., max_length=500)
 
 
 class SongBatchRequest(BaseModel):

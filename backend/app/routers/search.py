@@ -1,9 +1,13 @@
-from fastapi import APIRouter, Query, HTTPException
+import logging
 from typing import Literal
+
+from fastapi import APIRouter, Query, HTTPException
+
 from app.schemas import SearchResponse
 from app.services.netease import search_netease
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.get("/", response_model=SearchResponse)
@@ -18,5 +22,6 @@ async def search(
         else:
             items = []
         return SearchResponse(items=items)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"搜索服务不可用: {str(e)}")
+    except Exception:
+        logger.exception("网易云搜索失败")
+        raise HTTPException(status_code=502, detail="搜索服务暂时不可用，请稍后再试")

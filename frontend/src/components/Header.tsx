@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react';
 import { Button, Title } from 'animal-island-ui';
 import { ListIcon, LockIcon, LockOpenIcon, MicIcon, SettingsIcon } from 'naive-icons';
-import { lock, needsUnlock, openDialog, useCanEdit, useStore, type Dialog } from '@/store';
+import { lock, openDialog, useCanEdit, useStore, type Dialog } from '@/store';
 
 export function Header() {
   const playlistName = useStore((s) => s.config.playlist_name);
   const total = useStore((s) => s.songs.length);
+  const needsUnlock = useStore((s) => s.lockEnabled);
   const canEdit = useCanEdit();
 
   return (

@@ -90,11 +90,19 @@ export function DeleteSongModal({ song }: { song: Song }) {
 export function UnlockModal() {
   const [password, setPassword] = useState('');
   const [wrong, setWrong] = useState(false);
+  const [checking, setChecking] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (unlock(password)) closeDialog();
-    else setWrong(true);
+    setChecking(true);
+    try {
+      if (await unlock(password)) closeDialog();
+      else setWrong(true);
+    } catch (err) {
+      Notification.error({ message: '解锁失败', description: errorText(err) });
+    } finally {
+      setChecking(false);
+    }
   };
 
   return (
@@ -105,7 +113,7 @@ export function UnlockModal() {
       width="min(400px, calc(100vw - 24px))"
       onClose={closeDialog}
       footer={
-        <Button type="primary" htmlType="submit" form="unlock-form" disabled={!password} block>
+        <Button type="primary" htmlType="submit" form="unlock-form" loading={checking} disabled={!password} block>
           解锁
         </Button>
       }

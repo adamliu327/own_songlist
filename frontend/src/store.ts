@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api } from '@/api';
+import { api, hasPassword, setPassword, setUnauthorizedHandler } from '@/api';
 import { DEFAULT_CONFIG } from '@/lib/constants';
 import type { AppConfig, Overlap, Song, SongInput } from '@/types';
 
@@ -14,10 +14,10 @@ export type Dialog =
   | { type: 'lyric' }
   | { type: 'unlock' };
 
-// 编辑锁密码由部署时生成的 /config.js 提供，没设置就不上锁
-const PASSWORD = (window as { __APP_CONFIG__?: { password?: string } }).__APP_CONFIG__?.password;
-export const needsUnlock = !!PASSWORD;
-const UNLOCK_KEY = 'songlist-unlocked';
+// 是否启用了编辑锁要问后端才知道。记住上次的结果，页面刚打开、后端还没回话时先按它显示，
+// 不然每次打开「添加歌曲」和「解锁编辑」都会闪一下
+const LOCK_ENABLED_KEY = 'songlist-lock-enabled';
+const lockEnabledLastTime = localStorage.getItem(LOCK_ENABLED_KEY) === '1';
 
 interface State {
   songs: Song[];
@@ -27,6 +27,8 @@ interface State {
   language: string;
   overlap: Overlap | null;
   dialog: Dialog | null;
+  /** 后端是否设置了编辑锁密码 */
+  lockEnabled: boolean;
   unlocked: boolean;
   /** 刚复制过弹幕的歌，列表里短暂显示「已复制」 */
   copiedId: string | null;
@@ -40,7 +42,8 @@ export const useStore = create<State>(() => ({
   language: '',
   overlap: null,
   dialog: null,
-  unlocked: !PASSWORD || sessionStorage.getItem(UNLOCK_KEY) === PASSWORD,
+  lockEnabled: lockEnabledLastTime,
+  unlocked: !lockEnabledLastTime || hasPassword(),
   copiedId: null,
 }));
 
@@ -48,10 +51,20 @@ const set = useStore.setState;
 
 export const useCanEdit = () => useStore((s) => s.unlocked);
 
+function applyLock(lockEnabled: boolean, unlocked: boolean) {
+  if (!unlocked) setPassword('');
+  localStorage.setItem(LOCK_ENABLED_KEY, lockEnabled ? '1' : '0');
+  set({ lockEnabled, unlocked });
+}
+
+// 写操作被后端拒绝，说明手里的密码已经失效
+setUnauthorizedHandler(() => applyLock(true, false));
+
 export async function init() {
   set({ status: 'loading' });
   try {
-    const [songs, config] = await Promise.all([api.listSongs(), api.getConfig()]);
+    const [songs, config, auth] = await Promise.all([api.listSongs(), api.getConfig(), api.authStatus()]);
+    applyLock(auth.required, auth.unlocked);
     set({ songs, config, language: config.default_language_filter, status: 'ready' });
   } catch {
     set({ status: 'error' });
@@ -92,15 +105,21 @@ export const setOverlap = (overlap: Overlap | null) => set({ overlap });
 export const openDialog = (dialog: Dialog) => set({ dialog });
 export const closeDialog = () => set({ dialog: null });
 
-export function unlock(password: string) {
-  if (password !== PASSWORD) return false;
-  sessionStorage.setItem(UNLOCK_KEY, password);
-  set({ unlocked: true });
-  return true;
+/** 让后端验证密码，返回对不对；请求本身失败时抛错 */
+export async function unlock(password: string) {
+  setPassword(password);
+  try {
+    const { required, unlocked } = await api.authStatus();
+    applyLock(required, unlocked);
+    return unlocked;
+  } catch (err) {
+    setPassword('');
+    throw err;
+  }
 }
 
 export function lock() {
-  sessionStorage.removeItem(UNLOCK_KEY);
+  setPassword('');
   set({ unlocked: false });
 }
 
