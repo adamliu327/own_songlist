@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Notification } from 'animal-island-ui';
 import { api } from '@/api';
 import { writeClipboard } from '@/lib/clipboard';
 import { errorText, renderDanmaku } from '@/lib/constants';
+import { notifyError } from '@/lib/notify';
 import { flashCopied, setKeyword, useStore } from '@/store';
 import type { Candidate, Song } from '@/types';
 
@@ -50,7 +50,7 @@ export function useCopySong() {
         await writeClipboard(renderDanmaku(template, song));
         return true;
       } catch (err) {
-        Notification.error({ message: '复制失败', description: errorText(err) });
+        notifyError('复制失败', err);
         return false;
       }
     },

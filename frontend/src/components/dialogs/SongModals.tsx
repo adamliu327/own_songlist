@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button, Input, Modal, Notification } from 'animal-island-ui';
 import { SongForm } from '@/components/SongForm';
 import { draftFrom, trimDraft } from '@/lib/draft';
-import { errorText } from '@/lib/constants';
+import { notifyError } from '@/lib/notify';
 import { closeDialog, deleteSong, unlock, updateSong } from '@/store';
 import type { Song } from '@/types';
 
@@ -21,7 +21,7 @@ export function EditSongModal({ song }: { song: Song }) {
       Notification.success({ message: '已保存' });
       closeDialog();
     } catch (err) {
-      Notification.error({ message: '保存失败', description: errorText(err) });
+      notifyError('保存失败', err);
       setSaving(false);
     }
   };
@@ -59,7 +59,7 @@ export function DeleteSongModal({ song }: { song: Song }) {
       Notification.success({ message: `已删除「${song.name}」` });
       closeDialog();
     } catch (err) {
-      Notification.error({ message: '删除失败', description: errorText(err) });
+      notifyError('删除失败', err);
       setDeleting(false);
     }
   };
@@ -99,7 +99,7 @@ export function UnlockModal() {
       if (await unlock(password)) closeDialog();
       else setWrong(true);
     } catch (err) {
-      Notification.error({ message: '解锁失败', description: errorText(err) });
+      notifyError('解锁失败', err);
     } finally {
       setChecking(false);
     }

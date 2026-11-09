@@ -10,7 +10,6 @@ class SongCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=500)
     singer: Optional[str] = Field(None, max_length=500)
     language: Optional[str] = Field(None, max_length=50)
-    style: Optional[str] = Field(None, max_length=50)
     remark: Optional[str] = Field(None, max_length=2000)
     cover: Optional[str] = Field(None, max_length=2000)
 
@@ -21,18 +20,16 @@ class SongUpdate(SongCreate):
 
 class SongResponse(BaseModel):
     # 不继承上面的限制：库里已有的数据原样返回，不能因为某一条超长就让整个列表报错
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     name: str
     singer: Optional[str] = None
     language: Optional[str] = None
-    style: Optional[str] = None
     remark: Optional[str] = None
     cover: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
 
 
 class SearchCandidate(BaseModel):
@@ -96,17 +93,9 @@ class CompareRequest(BaseModel):
 
 class CompareItem(BaseModel):
     local_id: str
-    name: str
-    local_singer: Optional[str] = None
-    external_singer: Optional[str] = None
-    language: Optional[str] = None
-    style: Optional[str] = None
 
 
 class CompareResponse(BaseModel):
     source_title: Optional[str] = None
-    external_uid: Optional[int] = None
-    external_total: int
-    local_total: int
     matched_count: int
     items: list[CompareItem]

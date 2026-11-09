@@ -1,6 +1,8 @@
 """歌曲的增删改、批量导入去重，以及设置的读写。"""
-from app.database import SessionLocal
-from app.models import Song
+from sqlalchemy import text
+
+from app.database import SessionLocal, engine
+from app.models import Config, Song
 
 
 def test_create_strips_whitespace(client):
@@ -77,6 +79,18 @@ def test_list_still_returns_rows_that_break_todays_limits(client):
     assert len(songs[0]["name"]) == 600
 
 
+def test_database_created_by_an_older_version_still_works(client):
+    """老版本建的库里 songs 表还有 style 列。没有迁移机制，新代码要能直接在上面读写。"""
+    with engine.begin() as connection:
+        connection.execute(text("ALTER TABLE songs ADD COLUMN style VARCHAR(50)"))
+        connection.execute(text("INSERT INTO songs (id, name, style) VALUES ('old-1', '老歌', '流行')"))
+
+    assert [song["name"] for song in client.get("/songs/").json()] == ["老歌"]
+    assert client.post("/songs/", json={"name": "新歌"}).status_code == 200
+    assert client.put("/songs/old-1", json={"remark": "只唱副歌"}).json()["remark"] == "只唱副歌"
+    assert client.delete("/songs/old-1").status_code == 200
+
+
 def test_config_starts_from_defaults_and_can_be_changed(client):
     assert client.get("/config/").json()["danmaku_template"] == "点歌 {name}"
 
@@ -89,6 +103,16 @@ def test_config_starts_from_defaults_and_can_be_changed(client):
 def test_config_rejects_unknown_keys_and_oversized_values(client):
     assert client.put("/config/", json={"items": [{"key": "nope", "value": "x"}]}).status_code == 400
     assert client.put("/config/", json={"items": [{"key": "playlist_name", "value": "x" * 501}]}).status_code == 422
+
+
+def test_config_only_exposes_settings_still_in_use(client):
+    """旧版本存过主题之类的配置项，现在不用了：留在库里不动，但不再往外给，也不让再写。"""
+    with SessionLocal() as db:
+        db.add(Config(key="theme", value="dark"))
+        db.commit()
+
+    assert set(client.get("/config/").json()) == {"playlist_name", "danmaku_template", "default_language_filter"}
+    assert client.put("/config/", json={"items": [{"key": "theme", "value": "light"}]}).status_code == 400
 
 
 def test_config_reset_is_a_delete(client):

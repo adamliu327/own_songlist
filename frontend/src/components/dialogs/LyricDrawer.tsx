@@ -5,7 +5,7 @@ import { api } from '@/api';
 import { NeteaseSearch, SongCover } from '@/components/common';
 import { useFocusOnOpen } from '@/hooks';
 import { writeClipboard } from '@/lib/clipboard';
-import { errorText } from '@/lib/constants';
+import { notifyError } from '@/lib/notify';
 import { buildLrc, buildSrt, downloadTextFile, hasTimeline, subtitleFilename, type LrcFormat } from '@/lib/lrc';
 import { closeDialog } from '@/store';
 import type { Candidate, LyricResult } from '@/types';
@@ -38,7 +38,7 @@ export function LyricDrawer({ open }: { open: boolean }) {
       }
       setPicked({ candidate, lyric });
     } catch (err) {
-      Notification.error({ message: '获取歌词失败', description: errorText(err) });
+      notifyError('获取歌词失败', err);
     } finally {
       setLoadingId(null);
     }
@@ -101,7 +101,7 @@ function LyricResultView({ picked: { candidate, lyric }, onBack }: { picked: Pic
       await writeClipboard(lrcText);
       Notification.success({ message: '歌词已复制' });
     } catch (err) {
-      Notification.error({ message: '复制失败', description: errorText(err) });
+      notifyError('复制失败', err);
     }
   };
 

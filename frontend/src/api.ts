@@ -54,7 +54,7 @@ export const api = {
     request<{ created: number; skipped: number }>('POST', '/songs/batch', { items }),
 
   search: (keyword: string) =>
-    request<{ items: Candidate[] }>('GET', `/search/?${q({ keyword, source: 'netease' })}`),
+    request<{ items: Candidate[] }>('GET', `/search/?${q({ keyword })}`),
   lyric: (id: string) => request<LyricResult>('GET', `/lyric/netease?${q({ id })}`),
   previewPlaylist: (url: string) => request<PlaylistPreview>('POST', '/import/netease/preview', { url }),
   compare: (url: string) => request<CompareResult>('POST', '/compare/external', { url }),
