@@ -2,6 +2,7 @@ import uuid
 from typing import Optional
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
+from app.auth import require_unlock
 from app.database import get_db
 from app.models import Song as SongModel
 from app.schemas import SongCreate, SongUpdate, SongResponse, SongBatchRequest, SongBatchResponse
@@ -29,7 +30,7 @@ def list_songs(
     return query.order_by(SongModel.created_at.desc()).all()
 
 
-@router.post("/", response_model=SongResponse)
+@router.post("/", response_model=SongResponse, dependencies=[Depends(require_unlock)])
 def create_song(song: SongCreate, db: Session = Depends(get_db)):
     db_song = SongModel(id=str(uuid.uuid4()), **song.model_dump())
     db.add(db_song)
@@ -38,7 +39,7 @@ def create_song(song: SongCreate, db: Session = Depends(get_db)):
     return db_song
 
 
-@router.post("/batch", response_model=SongBatchResponse)
+@router.post("/batch", response_model=SongBatchResponse, dependencies=[Depends(require_unlock)])
 def batch_create_songs(body: SongBatchRequest, db: Session = Depends(get_db)):
     """批量创建歌曲，按（歌名, 歌手）归一化去重，已存在的跳过。"""
     existing = {
@@ -67,7 +68,7 @@ def get_song(song_id: str, db: Session = Depends(get_db)):
     return db_song
 
 
-@router.put("/{song_id}", response_model=SongResponse)
+@router.put("/{song_id}", response_model=SongResponse, dependencies=[Depends(require_unlock)])
 def update_song(song_id: str, song: SongUpdate, db: Session = Depends(get_db)):
     db_song = db.query(SongModel).filter(SongModel.id == song_id).first()
     if not db_song:
@@ -81,7 +82,7 @@ def update_song(song_id: str, song: SongUpdate, db: Session = Depends(get_db)):
     return db_song
 
 
-@router.delete("/{song_id}")
+@router.delete("/{song_id}", dependencies=[Depends(require_unlock)])
 def delete_song(song_id: str, db: Session = Depends(get_db)):
     db_song = db.query(SongModel).filter(SongModel.id == song_id).first()
     if not db_song:

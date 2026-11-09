@@ -1,13 +1,18 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.auth import require_unlock
 from app.database import get_db
+from app.errors import UserError
 from app.models import Song as SongModel
 from app.schemas import PlaylistPreviewRequest, PlaylistPreviewResponse, PlaylistTrackItem
 from app.services.netease import fetch_netease_playlist
 from app.services.starlwr import normalize_name
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 def local_song_keys(db: Session) -> set[tuple[str, str]]:
@@ -18,15 +23,21 @@ def local_song_keys(db: Session) -> set[tuple[str, str]]:
     }
 
 
-@router.post("/netease/preview", response_model=PlaylistPreviewResponse)
+# 预览本身不写库，但它是「添加歌曲」的一部分，而且会让后端对外发请求，所以也要求先解锁
+@router.post(
+    "/netease/preview",
+    response_model=PlaylistPreviewResponse,
+    dependencies=[Depends(require_unlock)],
+)
 async def preview_netease_playlist(body: PlaylistPreviewRequest, db: Session = Depends(get_db)):
     """解析网易云歌单链接，返回全部曲目并标记本地已存在的歌曲。"""
     try:
         playlist = await fetch_netease_playlist(body.url)
-    except ValueError as e:
+    except UserError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"获取歌单失败: {e}")
+    except Exception:
+        logger.exception("获取网易云歌单失败")
+        raise HTTPException(status_code=502, detail="获取歌单失败，网易云服务暂时不可用，请稍后再试")
 
     existing = local_song_keys(db)
     items = [

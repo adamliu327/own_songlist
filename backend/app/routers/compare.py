@@ -1,7 +1,10 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.errors import UserError
 from app.models import Song as SongModel
 from app.schemas import CompareRequest, CompareResponse, CompareItem
 from app.services.starlwr import (
@@ -11,6 +14,7 @@ from app.services.starlwr import (
 )
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/external", response_model=CompareResponse)
@@ -18,10 +22,11 @@ async def compare_external(body: CompareRequest, db: Session = Depends(get_db)):
     """拉取外部（songlist.cc / StarBot）歌单，与本地库按歌名（宽松）比对出重合项。"""
     try:
         external = await fetch_external_songlist(body.url)
-    except ValueError as e:
+    except UserError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"获取外部歌单失败: {e}")
+    except Exception:
+        logger.exception("获取外部歌单失败")
+        raise HTTPException(status_code=502, detail="获取外部歌单失败，对方服务暂时不可用，请稍后再试")
 
     ext_songs = external["songs"]
     ext_by_name = index_external_by_name(ext_songs)

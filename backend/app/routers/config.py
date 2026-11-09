@@ -2,6 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from app.auth import require_unlock
 from app.database import get_db
 from app.models import Config as ConfigModel
 from app.schemas import ConfigItem
@@ -28,7 +29,7 @@ def get_config(db: Session = Depends(get_db)):
     return result
 
 
-@router.put("/")
+@router.put("/", dependencies=[Depends(require_unlock)])
 def update_config(payload: ConfigUpdate, db: Session = Depends(get_db)):
     for item in payload.items:
         if item.key not in DEFAULT_CONFIG:
@@ -42,7 +43,8 @@ def update_config(payload: ConfigUpdate, db: Session = Depends(get_db)):
     return get_config(db)
 
 
-@router.post("/reset")
+# 用 DELETE 而不是不带请求体的 POST：后者浏览器不发预检，任意网页都能替用户触发
+@router.delete("/", dependencies=[Depends(require_unlock)])
 def reset_config(db: Session = Depends(get_db)):
     db.query(ConfigModel).delete()
     db.commit()

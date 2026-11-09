@@ -15,7 +15,7 @@
 - **手气不错**：从当前筛选结果里随机抽一首
 - **对比外部歌单**：拉取 songlist.cc 歌单，看重合与差集；记住最近对比过的地址，点一下就能再对比
 - **下载歌词**：搜索网易云音乐，选中歌曲后预览并保存带时间轴的 `.lrc` / `.srt`，有翻译/罗马音时可导出双语
-- **编辑锁**：可选设置密码，防止他人误改数据
+- **编辑锁**：可选设置密码，没解锁就不能添加、修改、删除歌曲和改设置（由后端校验）
 
 ## 技术栈
 
@@ -53,7 +53,8 @@ mkdir -p data               # SQLite 数据文件目录
 
 # 分开部署时网易云 API 在本机 3000 端口，修改 .env：
 #   NETEASE_API_URL=http://localhost:3000
-#   CORS_ORIGINS=*           （或填写前端实际访问地址）
+#   CORS_ORIGINS=http://<前端访问地址>   （浏览器地址栏里的协议+域名+端口，多个用逗号分隔）
+#   PASSWORD=你的密码                    （可选，启用编辑锁）
 
 .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
@@ -77,12 +78,6 @@ npx serve dist          # 快速预览
 # 或交给 nginx / caddy 等托管 dist 目录
 ```
 
-可选——启用编辑锁：在静态根目录（`dist/`）放一个 `config.js`：
-
-```js
-window.__APP_CONFIG__ = { password: "你的密码" };
-```
-
 > 本地开发则更简单：后端照上面启动，前端 `npm run dev`（默认 http://localhost:5173）。开发服务器会把 `/api` 转发到 http://localhost:8000；后端在别处时用 `API_PROXY` 指定，比如 `API_PROXY=http://localhost:30426/api npm run dev`。
 
 ---
@@ -92,7 +87,7 @@ window.__APP_CONFIG__ = { password: "你的密码" };
 ### 方式 2a：Docker Compose（推荐，一条命令）
 
 ```bash
-# 可选：先编辑 docker-compose.yml 中 frontend 的 PASSWORD= 设置编辑锁密码
+# 可选：先编辑 docker-compose.yml 中 backend 的 PASSWORD= 设置编辑锁密码
 docker compose up --build -d
 ```
 
@@ -117,19 +112,33 @@ docker run -d --name netease-api --network songlist moefurina/ncm-api:latest
 docker build -t songlist-backend ./backend
 docker run -d --name backend --network songlist \
   -v "$(pwd)/data:/app/data" \
+  -e PASSWORD= \
   songlist-backend
 
 # 4. 前端（构建时固定 API 走 /api，由容器内 nginx 反代到后端）
 docker build --build-arg VITE_API_URL=/api -t songlist-frontend ./frontend
 docker run -d --name frontend --network songlist \
   -p 127.0.0.1:30426:80 \
-  -e PASSWORD= \
   songlist-frontend
 ```
 
 访问 http://localhost:30426 。`PASSWORD` 留空则不启用编辑锁。
 
 > 注意：上面的端口映射只绑定了 `127.0.0.1`（仅本机可访问）。如需从其他设备直接访问，把映射改成 `-p 30426:80`（Compose 部署则修改 `docker-compose.yml` 中的 `ports`）。
+>
+> 对其他设备开放前建议先设置 `PASSWORD`。密码随请求明文传输，放到公网的话请在前面加一层 HTTPS 反向代理。
+
+---
+
+## 从旧版本升级
+
+编辑锁改由后端校验，`PASSWORD` 要从前端容器挪到后端：
+
+- Docker Compose：把 `PASSWORD=` 写在 `docker-compose.yml` 的 `backend` 下面
+- 纯 Docker：`-e PASSWORD=` 加在后端容器上
+- 分开部署：写进 `backend/.env`，原来放在 `dist/` 里的 `config.js` 可以删掉
+
+只在前端设置的密码不再生效，升级后记得检查一下页面右上角有没有「解锁」入口。
 
 ---
 
@@ -142,14 +151,14 @@ docker run -d --name frontend --network songlist \
 | `DATABASE_URL` | SQLite 数据库路径 | `sqlite:///./data/songlist.db` |
 | `NETEASE_API_URL` | 网易云 API 服务地址 | `http://netease-api:3000` |
 | `STARLWR_API_URL` | songlist.cc 对比数据源 | `https://api.starlwr.com` |
-| `CORS_ORIGINS` | 允许的跨域来源（逗号分隔，`*` 为全部） | `http://localhost:30426` |
+| `CORS_ORIGINS` | 允许的跨域来源（逗号分隔）。填 `*` 等于允许你打开的任何网页读写歌单，不建议 | `http://localhost:30426,http://localhost:5173` |
+| `PASSWORD` | 编辑锁密码，设置后写操作都要先在页面上解锁，留空不启用 | 空 |
 
 前端：
 
 | 参数 | 说明 | 默认值 |
 |------|------|--------|
 | `VITE_API_URL` | 构建参数，后端 API 地址；Docker 部署固定为 `/api` | `/api` |
-| `PASSWORD` | 前端容器环境变量，编辑锁密码，留空不启用 | 空 |
 
 ## 目录结构
 
