@@ -4,20 +4,19 @@ import { api } from '@/api';
 import { writeClipboard } from '@/lib/clipboard';
 import { errorText, renderDanmaku } from '@/lib/constants';
 import { notifyError } from '@/lib/notify';
+import { sortSongs } from '@/lib/sortSongs';
 import { flashCopied, setKeyword, useStore } from '@/store';
 import type { Candidate, Song } from '@/types';
 
 export const SEARCH_INPUT_ID = 'song-search';
 
-const collator = new Intl.Collator('zh-CN', { sensitivity: 'base' });
-
 /**
- * 主列表：关键词 → 对比筛选 → 语言，按歌手、歌名排序。
+ * 主列表：关键词 → 对比筛选 → 语言，再按选中的方式排序。
  * languageCounts 是语言筛选之前的数量，给语言标签用。
  */
 export function useVisibleSongs() {
-  const { songs, keyword, language, overlap } = useStore(
-    useShallow((s) => ({ songs: s.songs, keyword: s.keyword, language: s.language, overlap: s.overlap })),
+  const { songs, keyword, language, overlap, sort } = useStore(
+    useShallow((s) => ({ songs: s.songs, keyword: s.keyword, language: s.language, overlap: s.overlap, sort: s.sort })),
   );
 
   return useMemo(() => {
@@ -33,12 +32,13 @@ export function useVisibleSongs() {
       if (song.language) languageCounts[song.language] = (languageCounts[song.language] ?? 0) + 1;
     }
 
-    const visible = beforeLanguage
-      .filter((song) => !language || song.language === language)
-      .sort((a, b) => collator.compare(a.singer ?? '', b.singer ?? '') || collator.compare(a.name, b.name));
+    const visible = sortSongs(
+      beforeLanguage.filter((song) => !language || song.language === language),
+      sort,
+    );
 
     return { visible, languageCounts, totalBeforeLanguage: beforeLanguage.length };
-  }, [songs, keyword, language, overlap]);
+  }, [songs, keyword, language, overlap, sort]);
 }
 
 /** 复制点歌弹幕，返回是否成功；失败时弹通知 */
