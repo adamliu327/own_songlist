@@ -1,8 +1,9 @@
 import { Button, Input, Tag } from 'animal-island-ui';
-import { LockIcon, PlusIcon, SearchIcon, SparklesIcon } from 'naive-icons';
+import { LockIcon, PlusIcon, SearchIcon, SortIcon, SparklesIcon } from 'naive-icons';
 import { SEARCH_INPUT_ID } from '@/hooks';
 import { LANG_COLORS, LANGUAGES, NEUTRAL_COLOR } from '@/lib/constants';
-import { openDialog, setKeyword, setLanguage, useCanEdit, useStore } from '@/store';
+import { SORT_LABELS, SORT_MODES } from '@/lib/sortSongs';
+import { openDialog, setKeyword, setLanguage, setSort, useCanEdit, useStore } from '@/store';
 
 interface ToolbarProps {
   languageCounts: Record<string, number>;
@@ -77,20 +78,42 @@ function LanguageFilter({ counts, total }: { counts: Record<string, number>; tot
   const options = LANGUAGES.filter((lang) => counts[lang] || lang === language);
 
   return (
-    <div className="chips scroll-x">
-      <Tag variant={language === '' ? 'solid' : 'outlined'} color={NEUTRAL_COLOR} onClick={() => setLanguage('')}>
-        全部 {total}
-      </Tag>
-      {options.map((lang) => (
-        <Tag
-          key={lang}
-          variant={language === lang ? 'solid' : 'outlined'}
-          color={LANG_COLORS[lang]}
-          onClick={() => setLanguage(lang)}
-        >
-          {lang} {counts[lang] ?? 0}
+    <div className="filter-row">
+      <div className="chips scroll-x">
+        <Tag variant={language === '' ? 'solid' : 'outlined'} color={NEUTRAL_COLOR} onClick={() => setLanguage('')}>
+          全部 {total}
         </Tag>
-      ))}
+        {options.map((lang) => (
+          <Tag
+            key={lang}
+            variant={language === lang ? 'solid' : 'outlined'}
+            color={LANG_COLORS[lang]}
+            onClick={() => setLanguage(lang)}
+          >
+            {lang} {counts[lang] ?? 0}
+          </Tag>
+        ))}
+      </div>
+      <SortButton />
     </div>
+  );
+}
+
+/** 点一下换一种排序：按歌手 → 最新添加 → 最早添加。按钮上写的是当前用的是哪种 */
+function SortButton() {
+  const sort = useStore((s) => s.sort);
+  const next = SORT_MODES[(SORT_MODES.indexOf(sort) + 1) % SORT_MODES.length];
+
+  return (
+    <Button
+      type="text"
+      size="small"
+      icon={<SortIcon size={16} color="currentColor" />}
+      onClick={() => setSort(next)}
+      aria-label={`排序：${SORT_LABELS[sort]}，点击换成${SORT_LABELS[next]}`}
+      title={`点击换成「${SORT_LABELS[next]}」`}
+    >
+      {SORT_LABELS[sort]}
+    </Button>
   );
 }

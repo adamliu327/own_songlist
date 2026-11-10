@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { api, hasPassword, setPassword, setUnauthorizedHandler } from '@/api';
 import { DEFAULT_CONFIG } from '@/lib/constants';
+import { SORT_MODES, type SortMode } from '@/lib/sortSongs';
 import type { AppConfig, Overlap, Song, SongInput } from '@/types';
 
 /** 同一时间只开一个弹窗 / 抽屉 */
@@ -19,12 +20,17 @@ export type Dialog =
 const LOCK_ENABLED_KEY = 'songlist-lock-enabled';
 const lockEnabledLastTime = localStorage.getItem(LOCK_ENABLED_KEY) === '1';
 
+// 排序方式是个人的浏览习惯，记在浏览器里，不放进后端的设置
+const SORT_KEY = 'songlist-sort';
+const savedSort = localStorage.getItem(SORT_KEY) as SortMode | null;
+
 interface State {
   songs: Song[];
   status: 'loading' | 'ready' | 'error';
   config: AppConfig;
   keyword: string;
   language: string;
+  sort: SortMode;
   overlap: Overlap | null;
   dialog: Dialog | null;
   /** 后端是否设置了编辑锁密码 */
@@ -40,6 +46,7 @@ export const useStore = create<State>(() => ({
   config: DEFAULT_CONFIG,
   keyword: '',
   language: '',
+  sort: savedSort && SORT_MODES.includes(savedSort) ? savedSort : 'name',
   overlap: null,
   dialog: null,
   lockEnabled: lockEnabledLastTime,
@@ -100,6 +107,10 @@ export async function resetConfig() {
 
 export const setKeyword = (keyword: string) => set({ keyword });
 export const setLanguage = (language: string) => set({ language });
+export function setSort(sort: SortMode) {
+  localStorage.setItem(SORT_KEY, sort);
+  set({ sort });
+}
 export const setOverlap = (overlap: Overlap | null) => set({ overlap });
 
 export const openDialog = (dialog: Dialog) => set({ dialog });

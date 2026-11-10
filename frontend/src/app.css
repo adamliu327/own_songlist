@@ -172,6 +172,26 @@ mark {
   flex-shrink: 0;
 }
 
+/* 语言标签和排序按钮同一行：标签占满左边，排序按钮固定在右边不跟着滑动 */
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: var(--animal-spacing-sm);
+}
+
+.filter-row .chips {
+  flex: 1;
+  min-width: 0;
+}
+
+.filter-row .chips.scroll-x {
+  margin-right: 0;
+}
+
+.filter-row > button {
+  flex-shrink: 0;
+}
+
 .compare-bar {
   display: flex;
   flex-wrap: wrap;
